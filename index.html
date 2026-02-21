@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanel Supply Chain Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0c;
+            --surface: #141418;
+            --surface-2: #1c1c22;
+            --border: #2a2a32;
+            --text: #e8e8ec;
+            --text-muted: #8b8b96;
+            --accent: #d4a853;
+            --accent-dim: #d4a85320;
+            --red: #e54d4d;
+            --red-bg: #e54d4d15;
+            --orange: #e8923a;
+            --orange-bg: #e8923a15;
+            --blue: #4d9ee5;
+            --blue-bg: #4d9ee515;
+            --green: #4dc77a;
+            --green-bg: #4dc77a15;
+            --gray: #555;
+            --gray-bg: #55555515;
+            --radius: 10px;
+            --font: 'DM Sans', -apple-system, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* ---- HEADER ---- */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+        .logo-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font);
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .refresh-btn:hover { background: var(--accent); color: var(--bg); }
+        .refresh-btn.loading { opacity: 0.6; pointer-events: none; }
+        .refresh-btn svg { width: 14px; height: 14px; }
+        .refresh-btn.loading svg { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .last-updated {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: var(--mono);
+        }
+
+        /* ---- SETUP SCREEN ---- */
+        .setup-screen {
+            max-width: 480px;
+            margin: 80px auto;
+            padding: 40px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .setup-screen h2 {
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+        .setup-screen p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .setup-screen label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .setup-screen input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        .setup-screen input:focus { outline: none; border-color: var(--accent); }
+        .setup-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: 6px;
+            font-family: var(--font);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .setup-btn:hover { opacity: 0.9; }
+        .setup-error {
+            color: var(--red);
+            font-size: 13px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        /* ---- NAV TABS ---- */
+        .nav {
+            display: flex;
+            gap: 0;
+            padding: 0 32px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .nav-tab {
+            padding: 14px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .nav-tab:hover { color: var(--text); }
+        .nav-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* ---- MAIN CONTENT ---- */
+        .main { padding: 24px 32px; }
+        .hidden { display: none !important; }
+
+        /* ---- SUMMARY CARDS ---- */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+        }
+        .card-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .card-value {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: var(--mono);
+        }
+        .card-value.red { color: var(--red); }
+        .card-value.orange { color: var(--orange); }
+        .card-value.blue { color: var(--blue); }
+        .card-value.green { color: var(--green); }
+        .card-value.gray { color: var(--gray); }
+
+        /* ---- FILTERS ---- */
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-btn {
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: var(--font);
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            transition: all 0.15s;
+        }
+        .filter-btn:hover { border-color: var(--text-muted); color: var(--text); }
+        .filter-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+        .filter-btn .count {
+            font-family: var(--mono);
+            font-size: 11px;
+            margin-left: 4px;
+            opacity: 0.7;
+        }
+
+        .search-input {
+            padding: 6px 14px;
+            font-size: 13px;
+            font-family: var(--font);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text);
+            width: 240px;
+        }
+        .search-input:focus { outline: none; border-color: var(--accent); }
+        .search-input::placeholder { color: var(--text-muted); }
+
+        /* ---- TABLE ---- */
+        .table-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .table-scroll { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        thead th {
+            position: sticky;
+            top: 0;
+            background: var(--surface-2);
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+        thead th:hover { color: var(--text); }
+        thead th.sorted-asc::after { content: ' \u2191'; color: var(--accent); }
+        thead th.sorted-desc::after { content: ' \u2193'; color: var(--accent); }
+        tbody td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        tbody tr:hover { background: var(--surface-2); }
+        tbody tr:last-child td { border-bottom: none; }
+        .num { font-family: var(--mono); text-align: right; }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .badge-oos { background: var(--gray-bg); color: #999; border: 1px solid #44444480; }
+        .badge-critical { background: var(--red-bg); color: var(--red); border: 1px solid #e54d4d40; }
+        .badge-atrisk { background: var(--orange-bg); color: var(--orange); border: 1px solid #e8923a40; }
+        .badge-healthy { background: var(--blue-bg); color: var(--blue); border: 1px solid #4d9ee540; }
+        .badge-excess { background: var(--green-bg); color: var(--green); border: 1px solid #4dc77a40; }
+
+        .bar-cell { width: 120px; }
+        .woh-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .woh-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+
+        /* ---- EXPORT ---- */
+        .export-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .export-btn {
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: var(--font);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        .result-count {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: var(--mono);
+        }
+
+        /* ---- PO TAB ---- */
+        .po-vendor { color: var(--accent); font-weight: 500; }
+
+        /* ---- LOADING ---- */
+        .loading-overlay {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 0;
+            color: var(--text-muted);
+            gap: 16px;
+        }
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* ---- RESPONSIVE ---- */
+        @media (max-width: 768px) {
+            .header { padding: 16px; }
+            .nav { padding: 0 16px; }
+            .main { padding: 16px; }
+            .cards { grid-template-columns: repeat(2, 1fr); }
+            .search-input { width: 100%; }
+        }
+    </style>
+
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setupScreen" class="setup-screen">
+    <h2>Kanel Supply Chain Hub</h2>
+    <p>Make sure the proxy is running on your computer.<br>Open a terminal and run: <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:var(--mono);">node proxy.js</code></p>
+    <label>Proxy URL</label>
+    <input type="text" id="setupUrl" value="http://localhost:3847" placeholder="http://localhost:3847">
+    <button class="setup-btn" onclick="saveConfig()">Connect</button>
+    <div id="setupError" class="setup-error"></div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="hidden">
+    <div class="header">
+        <div class="header-left">
+            <div>
+                <div class="logo">Kanel</div>
+                <div class="logo-sub">Supply Chain Hub</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <span class="last-updated" id="lastUpdated"></span>
+            <button class="refresh-btn" onclick="exportAllXLSX()" style="background:transparent;border:1px solid var(--border);margin-right:8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export All
+            </button>
+            <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-tab active" data-tab="woh" onclick="switchTab('woh')">Weeks on Hand</div>
+        <div class="nav-tab" data-tab="fg" onclick="switchTab('fg')">Finished Goods</div>
+        <div class="nav-tab" data-tab="rm" onclick="switchTab('rm')">Raw Materials</div>
+        <div class="nav-tab" data-tab="rmdemand" onclick="switchTab('rmdemand')">RM Demand</div>
+        <div class="nav-tab" data-tab="casepack" onclick="switchTab('casepack')">Case Pack Builder</div>
+        <div class="nav-tab" data-tab="axia" onclick="switchTab('axia')">Axia Production</div>
+        <div class="nav-tab" data-tab="pos" onclick="switchTab('pos')">Open POs</div>
+        <div class="nav-tab" data-tab="boms" onclick="switchTab('boms')">BOMs</div>
+    </div>
+
+    <div class="main">
+        <!-- WOH TAB -->
+        <div id="tab-woh" class="tab-content">
+            <div class="cards" id="wohCards"></div>
+            <div class="filters" id="wohFilters"></div>
+            <div class="export-bar">
+                <span class="result-count" id="wohCount"></span>
+                <button class="export-btn" onclick="exportCSV('woh')">Export CSV</button>
+            </div>
+            <div class="table-wrap"><div class="table-scroll">
+                <table id="wohTable"><thead><tr>
+                    <th data-col="part_number" onclick="sortTable('woh','part_number')">SKU</th>
+                    <th data-col="item_class" onclick="sortTable('woh','item_class')">Type</th>
+                    <th data-col="on_hand_qty" onclick="sortTable('woh','on_hand_qty')">On Hand</th>
+                    <th data-col="committed_qty" onclick="sortTable('woh','committed_qty')">Committed</th>
+                    <th data-col="available_qty" onclick="sortTable('woh','available_qty')">Available</th>
+                    <th data-col="weekly_forecast" onclick="sortTable('woh','weekly_forecast')">Wkly Fcst</th>
+                    <th data-col="doh" onclick="sortTable('woh','doh')">DOH</th>
+                    <th data-col="woh" onclick="sortTable('woh','woh')">WOH</th>
+                    <th data-col="moh" onclick="sortTable('woh','moh')">MOH</th>
+                    <th>Bar</th>
+                    <th data-col="status" onclick="sortTable('woh','status')">Status</th>
+                </tr></thead><tbody id="wohBody"></tbody></table>
+            </div></div>
+        </div>
+
+        <!-- FG TAB -->
+        <div id="tab-fg" class="tab-content hidden">
+            <div class="cards" id="fgCards"></div>
+            <div class="filters"><input type="text" class="search-input" placeholder="Search finished goods..." oninput="filterFG(this.value)"></div>
+            <div class="export-bar"><span class="result-count" id="fgCount"></span><button class="export-btn" onclick="exportCSV('fg')">Export CSV</button></div>
+            <div class="table-wrap"><div class="table-scroll"><table><thead><tr>
+                <th onclick="sortTable('fg','part_number')">SKU</th>
+                <th onclick="sortTable('fg','on_hand_qty')">On Hand</th>
+                <th onclick="sortTable('fg','committed_qty')">Committed</th>
+                <th onclick="sortTable('fg','available_qty')">Available</th>
+                <th onclick="sortTable('fg','component_count')">Components</th>
+            </tr></thead><tbody id="fgBody"></tbody></table></div></div>
+        </div>
+
+        <!-- RM TAB -->
+        <div id="tab-rm" class="tab-content hidden">
+            <div class="filters"><input type="text" class="search-input" placeholder="Search raw materials..." oninput="filterRM(this.value)"></div>
+            <div class="export-bar"><span class="result-count" id="rmCount"></span><button class="export-btn" onclick="exportCSV('rm')">Export CSV</button></div>
+            <div class="table-wrap"><div class="table-scroll"><table><thead><tr>
+                <th onclick="sortTable('rm','part_number')">Material</th>
+                <th onclick="sortTable('rm','on_hand_qty')">On Hand</th>
+                <th onclick="sortTable('rm','committed_qty')">Committed</th>
+                <th onclick="sortTable('rm','available_qty')">Available</th>
+                <th onclick="sortTable('rm','used_in_count')">Used In</th>
+            </tr></thead><tbody id="rmBody"></tbody></table></div></div>
+        </div>
+
+        <!-- RM DEMAND TAB -->
+        <div id="tab-rmdemand" class="tab-content hidden">
+            <div class="cards" id="rmdemandCards"></div>
+            <div class="filters"><input type="text" class="search-input" placeholder="Search materials..." oninput="filterRMDemand(this.value)"></div>
+            <div class="export-bar"><span class="result-count" id="rmdemandCount"></span><button class="export-btn" onclick="exportCSV('rmdemand')">Export CSV</button></div>
+            <div class="table-wrap"><div class="table-scroll">
+                <table><thead id="rmdemandHead"></thead><tbody id="rmdemandBody"></tbody></table>
+            </div></div>
+        </div>
+
+        <!-- CASE PACK BUILDER TAB -->
+        <div id="tab-casepack" class="tab-content hidden">
+            <div class="cards" id="casepackCards"></div>
+            <div class="filters"><input type="text" class="search-input" placeholder="Search kits..." oninput="filterCasePack(this.value)"></div>
+            <div class="export-bar"><span class="result-count" id="casepackCount"></span>
+                <button class="export-btn" onclick="printCasePackSheet()" style="margin-right:8px;">Print Pick Sheet</button>
+                <button class="export-btn" onclick="exportCSV('casepack')">Export CSV</button>
+            </div>
+            <div class="table-wrap"><div class="table-scroll">
+                <table><thead id="casepackHead"></thead><tbody id="casepackBody"></tbody></table>
+            </div></div>
+        </div>
+
+        <!-- AXIA PRODUCTION TAB -->
+        <div id="tab-axia" class="tab-content hidden">
+            <div class="cards" id="axiaCards"></div>
+            <div class="filters" id="axiaFilters"></div>
+            <div class="export-bar"><span class="result-count" id="axiaCount"></span><button class="export-btn" onclick="exportCSV('axia')">Export CSV</button></div>
+            <div class="table-wrap"><div class="table-scroll">
+                <table><thead id="axiaHead"></thead><tbody id="axiaBody"></tbody></table>
+            </div></div>
+        </div>
+
+        <!-- POs TAB -->
+        <div id="tab-pos" class="tab-content hidden">
+            <div class="cards" id="poCards"></div>
+            <div class="filters"><input type="text" class="search-input" placeholder="Search POs, vendors, parts..." oninput="filterPOs(this.value)"></div>
+            <div class="export-bar"><span class="result-count" id="poCount"></span><button class="export-btn" onclick="exportCSV('pos')">Export CSV</button></div>
+            <div class="table-wrap"><div class="table-scroll"><table><thead><tr>
+                <th onclick="sortTable('pos','po_num')">PO #</th>
+                <th onclick="sortTable('pos','vendor')">Vendor</th>
+                <th onclick="sortTable('pos','part')">Part</th>
+                <th onclick="sortTable('pos','qty_remaining')">Qty Remaining</th>
+                <th onclick="sortTable('pos','expected_date')">Expected</th>
+                <th onclick="sortTable('pos','status')">Status</th>
+            </tr></thead><tbody id="poBody"></tbody></table></div></div>
+        </div>
+
+        <!-- BOMs TAB -->
+        <div id="tab-boms" class="tab-content hidden">
+            <div class="filters"><input type="text" class="search-input" placeholder="Search BOMs..." oninput="filterBOMs(this.value)"></div>
+            <div class="export-bar"><span class="result-count" id="bomCount"></span><button class="export-btn" onclick="exportCSV('boms')">Export CSV</button></div>
+            <div class="table-wrap"><div class="table-scroll"><table><thead><tr>
+                <th onclick="sortTable('boms','finished_good')">Finished Good</th>
+                <th onclick="sortTable('boms','component')">Component</th>
+                <th onclick="sortTable('boms','qty_per')">Qty Per</th>
+                <th onclick="sortTable('boms','uom')">UOM</th>
+            </tr></thead><tbody id="bomBody"></tbody></table></div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let appState = {
+    config: null,
+    data: null,
+    forecast: {},
+    forecastMonthly: {},
+    monthLabels: [],
+    wohFilter: 'all',
+    wohSearch: '',
+    sortCol: {},
+    sortDir: {},
+    axiaBuildMonths: 3,
+    _wohData: null, _fgData: null, _fgFiltered: null,
+    _rmData: null, _rmFiltered: null, _rmdemandData: null, _rmdemandFiltered: null,
+    _casepackData: null, _casepackFiltered: null, _axiaData: null, _axiaFiltered: null,
+    _poData: null, _poFiltered: null, _bomData: null, _bomFiltered: null
+};
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function formatNum(n, dec=0) {
+    if (n === null || n === undefined || isNaN(n)) return '--';
+    return Number(n).toLocaleString('en-CA', {minimumFractionDigits: dec, maximumFractionDigits: dec});
+}
+
+function getStatusBadge(s) {
+    const m = {oos:'badge-oos" >OOS',critical:'badge-critical">CRITICAL',atrisk:'badge-atrisk">AT RISK',healthy:'badge-healthy">HEALTHY',excess:'badge-excess">EXCESS'};
+    return m[s] ? `<span class="badge ${m[s]}</span>` : '<span class="badge" style="opacity:0.4">NO FCST</span>';
+}
+function getStatusLabel(s) {
+    return {oos:'OOS',critical:'CRITICAL',atrisk:'AT RISK',healthy:'HEALTHY',excess:'EXCESS'}[s] || 'NO FORECAST';
+}
+function getBarColor(s) {
+    return {oos:'var(--gray)',critical:'var(--red)',atrisk:'var(--orange)',healthy:'var(--blue)',excess:'var(--green)'}[s] || 'var(--gray)';
+}
+
+// UOM Conversion: normalize everything to inventory units (kg for weight, Each for counts)
+function convertToKg(qty, uom) {
+    const u = (uom||'').toLowerCase();
+    if (u === 'gram' || u === 'g') return qty / 1000;
+    if (u === 'kilogram' || u === 'kg') return qty;
+    if (u === '454g bag') return qty * 0.454;
+    if (u === '5kg bag') return qty * 5;
+    return qty;
+}
+function isWeightUom(uom) {
+    return ['gram','g','kilogram','kg','454g bag','5kg bag'].includes((uom||'').toLowerCase());
+}
+function displayUom(uom) {
+    return isWeightUom(uom) ? 'kg' : uom;
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.remove('hidden');
+    document.querySelector(`.nav-tab[data-tab="${tab}"]`).classList.add('active');
+}
+
+// ============================================================
+// SORTING
+// ============================================================
+function sortTable(tab, col) {
+    if (appState.sortCol[tab] === col) {
+        appState.sortDir[tab] = appState.sortDir[tab] === 'asc' ? 'desc' : 'asc';
+    } else {
+        appState.sortCol[tab] = col;
+        appState.sortDir[tab] = 'asc';
+    }
+    const dir = appState.sortDir[tab] === 'asc' ? 1 : -1;
+    const key = '_' + tab + 'Filtered';
+    const data = appState[key] || [];
+    data.sort((a,b) => {
+        let va = a[col], vb = b[col];
+        if (va === null || va === undefined) return 1;
+        if (vb === null || vb === undefined) return -1;
+        if (typeof va === 'string') return va.localeCompare(vb) * dir;
+        return (va - vb) * dir;
+    });
+    // Re-render the appropriate table
+    const renderers = {
+        woh: () => renderWOHTable(), fg: () => renderFGTable(data), rm: () => renderRMTable(data),
+        rmdemand: () => renderRMDemandTable(data), casepack: () => renderCasePackTable(data),
+        axia: () => renderAxiaTable(data), pos: () => renderPOTable(data), boms: () => renderBOMTable(data)
+    };
+    if (renderers[tab]) renderers[tab]();
+}
+
+// ============================================================
+// FORECAST UPLOAD (XLSX)
+// ============================================================
+function showForecastUpload() {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.xlsx,.xls,.csv';
+    inp.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!window.XLSX) {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+            document.head.appendChild(s);
+            await new Promise(r => s.onload = r);
+        }
+        const data = await file.arrayBuffer();
+        const wb = XLSX.read(data);
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+
+        // Detect Kanel format: data starts at row 7+, cols 7-18 are monthly
+        const annual = {};
+        const monthly = {};
+        const monthLabels = [];
+
+        // Find header row (contains month names)
+        let headerRow = -1;
+        for (let i = 0; i < Math.min(10, rows.length); i++) {
+            const r = rows[i];
+            if (r && r.length > 8) {
+                const hasMonth = r.some(c => /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i.test(String(c)));
+                if (hasMonth) { headerRow = i; break; }
+            }
+        }
+
+        if (headerRow >= 0) {
+            // Extract month labels from header
+            for (let c = 7; c <= 18 && c < rows[headerRow].length; c++) {
+                const lbl = String(rows[headerRow][c]).trim();
+                if (lbl) monthLabels.push(lbl);
+            }
+
+            let matched = 0, total = 0;
+            const inv = (appState.data && appState.data.inventory) ? appState.data.inventory : [];
+            const partNames = inv.map(i => i.part_number);
+
+            for (let i = headerRow + 1; i < rows.length; i++) {
+                const r = rows[i];
+                if (!r || !r[0]) continue;
+                let name = String(r[0]).trim();
+                total++;
+
+                // Name matching
+                let matchedName = partNames.find(p => p === name);
+                if (!matchedName) matchedName = partNames.find(p => p.toLowerCase() === name.toLowerCase());
+                if (!matchedName) matchedName = partNames.find(p => p.replace(/\s+/g,' ').toLowerCase() === name.replace(/\s+/g,' ').toLowerCase());
+                // Manual corrections
+                const corrections = {"Bonjour, Hi.":"Bonjour, Hi","Spice Traveler":"Spice traveler","epices a Rosbif":"epices a rosbif"};
+                if (!matchedName && corrections[name]) matchedName = partNames.find(p => p === corrections[name]);
+
+                const key = matchedName || name;
+                let yearTotal = 0;
+                const mo = [];
+                for (let c = 7; c <= 18 && c < r.length; c++) {
+                    const v = parseFloat(r[c]) || 0;
+                    yearTotal += v;
+                    mo.push(v);
+                }
+                if (yearTotal > 0) {
+                    annual[key] = yearTotal;
+                    monthly[key] = mo;
+                    if (matchedName) matched++;
+                }
+            }
+            appState.monthLabels = monthLabels;
+            alert(`Forecast loaded: ${matched}/${total} SKUs matched`);
+        }
+
+        appState.forecast = annual;
+        appState.forecastMonthly = monthly;
+        localStorage.setItem('kanel-hub-forecast', JSON.stringify(annual));
+        localStorage.setItem('kanel-hub-forecast-monthly', JSON.stringify(monthly));
+        localStorage.setItem('kanel-hub-forecast-months', JSON.stringify(monthLabels));
+        renderAll();
+    };
+    inp.click();
+}
+
+// ============================================================
+// WOH CALCULATIONS (uses AVAILABLE)
+// ============================================================
+function calculateWOH(inventory) {
+    return inventory.map(item => {
+        const fc = appState.forecast[item.part_number];
+        const weeklyFcst = fc ? fc / 52 : null;
+        const available = item.available_qty !== undefined ? item.available_qty : item.on_hand_qty;
+        let woh = null, doh = null, moh = null, status = 'no-forecast';
+
+        if (weeklyFcst && weeklyFcst > 0) {
+            woh = available / weeklyFcst;
+            doh = Math.round(woh * 7);
+            moh = Math.round(woh / 4.33 * 10) / 10;
+            if (available === 0) status = 'oos';
+            else if (woh < 4) status = 'critical';
+            else if (woh < 8) status = 'atrisk';
+            else if (woh <= 20) status = 'healthy';
+            else status = 'excess';
+        } else if (available === 0) {
+            status = 'oos'; woh = 0; doh = 0; moh = 0;
+        }
+        return { ...item, available_qty: available, weekly_forecast: weeklyFcst, woh, doh, moh, status };
+    });
+}
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAll() {
+    if (!appState.data) return;
+    renderWOH(); renderFG(); renderRM();
+    renderRMDemand(); renderCasePack(); renderAxia();
+    renderPOs(); renderBOMs();
+}
+
+// ---- WOH ----
+function renderWOH() {
+    const inv = appState.data.inventory || [];
+    const wohData = calculateWOH(inv);
+    appState._wohData = wohData;
+    appState._wohFiltered = wohData;
+
+    const counts = {oos:0, critical:0, atrisk:0, healthy:0, excess:0};
+    wohData.forEach(r => { if (counts[r.status] !== undefined) counts[r.status]++; });
+
+    document.getElementById('wohCards').innerHTML = `
+        <div class="card"><div class="card-label">Total SKUs</div><div class="card-value">${inv.length}</div></div>
+        <div class="card"><div class="card-label">Out of Stock</div><div class="card-value gray">${counts.oos}</div></div>
+        <div class="card"><div class="card-label">Critical (&lt;4 wk)</div><div class="card-value red">${counts.critical}</div></div>
+        <div class="card"><div class="card-label">At Risk (4-8 wk)</div><div class="card-value orange">${counts.atrisk}</div></div>
+        <div class="card"><div class="card-label">Healthy (8-20 wk)</div><div class="card-value blue">${counts.healthy}</div></div>
+        <div class="card"><div class="card-label">Excess (&gt;20 wk)</div><div class="card-value green">${counts.excess}</div></div>
+    `;
+    const hasForecast = Object.keys(appState.forecast).length > 0;
+    document.getElementById('wohFilters').innerHTML = `
+        <button class="filter-btn ${appState.wohFilter==='all'?'active':''}" onclick="setWohFilter('all')">All<span class="count">${inv.length}</span></button>
+        <button class="filter-btn ${appState.wohFilter==='oos'?'active':''}" onclick="setWohFilter('oos')">OOS<span class="count">${counts.oos}</span></button>
+        <button class="filter-btn ${appState.wohFilter==='critical'?'active':''}" onclick="setWohFilter('critical')">Critical<span class="count">${counts.critical}</span></button>
+        <button class="filter-btn ${appState.wohFilter==='atrisk'?'active':''}" onclick="setWohFilter('atrisk')">At Risk<span class="count">${counts.atrisk}</span></button>
+        <button class="filter-btn ${appState.wohFilter==='healthy'?'active':''}" onclick="setWohFilter('healthy')">Healthy<span class="count">${counts.healthy}</span></button>
+        <button class="filter-btn ${appState.wohFilter==='excess'?'active':''}" onclick="setWohFilter('excess')">Excess<span class="count">${counts.excess}</span></button>
+        <input type="text" class="search-input" placeholder="Search SKUs..." oninput="appState.wohSearch=this.value;renderWOHTable()" value="${appState.wohSearch}">
+        ${!hasForecast ? '<button class="filter-btn" style="border-color:var(--accent);color:var(--accent)" onclick="showForecastUpload()">+ Upload Forecast</button>' : '<button class="filter-btn" onclick="showForecastUpload()">Update Forecast</button>'}
+    `;
+    renderWOHTable(wohData);
+}
+
+function setWohFilter(f) { appState.wohFilter = f; renderWOHTable(); }
+
+function renderWOHTable(wohData) {
+    if (!wohData) wohData = appState._wohData || [];
+    let filtered = wohData;
+    if (appState.wohFilter !== 'all') filtered = filtered.filter(r => r.status === appState.wohFilter);
+    if (appState.wohSearch) {
+        const q = appState.wohSearch.toLowerCase();
+        filtered = filtered.filter(r => r.part_number.toLowerCase().includes(q));
+    }
+    appState._wohFiltered = filtered;
+    document.getElementById('wohCount').textContent = `${filtered.length} items`;
+    document.getElementById('wohBody').innerHTML = filtered.map(r => {
+        const barW = r.woh !== null ? Math.min(100, r.woh / 30 * 100) : 0;
+        return `<tr>
+            <td>${r.part_number}</td>
+            <td><span style="font-size:11px;color:var(--text-muted)">${r.item_class}</span></td>
+            <td class="num">${formatNum(r.on_hand_qty)}</td>
+            <td class="num" style="color:${(r.committed_qty||0)>0?'var(--orange)':'var(--text-muted)'}">${formatNum(r.committed_qty||0)}</td>
+            <td class="num" style="font-weight:600">${formatNum(r.available_qty)}</td>
+            <td class="num">${r.weekly_forecast!==null?formatNum(r.weekly_forecast,1):'<span style="color:var(--text-muted)">--</span>'}</td>
+            <td class="num" style="color:var(--text-muted)">${r.doh!==null?formatNum(r.doh):'--'}</td>
+            <td class="num" style="font-weight:600">${r.woh!==null?formatNum(r.woh,1):'--'}</td>
+            <td class="num" style="color:var(--text-muted)">${r.moh!==null?formatNum(r.moh,1):'--'}</td>
+            <td class="bar-cell"><div class="woh-bar"><div class="woh-bar-fill" style="width:${barW}%;background:${getBarColor(r.status)}"></div></div></td>
+            <td>${getStatusBadge(r.status)}</td>
+        </tr>`;
+    }).join('');
+}
+
+// ---- FG ----
+function renderFG() {
+    const inv = appState.data.inventory || [];
+    const boms = appState.data.boms || [];
+    const bomsByFG = {};
+    boms.forEach(b => { bomsByFG[b.finished_good] = (bomsByFG[b.finished_good]||0) + 1; });
+    const fg = inv.filter(i => i.item_class === 'FG').map(i => ({...i, component_count: bomsByFG[i.part_number]||0}));
+    appState._fgData = fg; appState._fgFiltered = fg;
+    document.getElementById('fgCards').innerHTML = `<div class="card"><div class="card-label">Finished Goods</div><div class="card-value">${fg.length}</div></div>`;
+    renderFGTable(fg);
+}
+function filterFG(q) { const d=appState._fgData||[]; const f=q?d.filter(r=>r.part_number.toLowerCase().includes(q.toLowerCase())):d; appState._fgFiltered=f; renderFGTable(f); }
+function renderFGTable(data) {
+    document.getElementById('fgCount').textContent = `${data.length} items`;
+    document.getElementById('fgBody').innerHTML = data.map(r => `<tr>
+        <td>${r.part_number}</td>
+        <td class="num">${formatNum(r.on_hand_qty)}</td>
+        <td class="num" style="color:${(r.committed_qty||0)>0?'var(--orange)':'var(--text-muted)'}">${formatNum(r.committed_qty||0)}</td>
+        <td class="num" style="font-weight:600">${formatNum(r.available_qty!==undefined?r.available_qty:r.on_hand_qty)}</td>
+        <td class="num">${r.component_count}</td>
+    </tr>`).join('');
+}
+
+// ---- RM ----
+function renderRM() {
+    const inv = appState.data.inventory || [];
+    const boms = appState.data.boms || [];
+    const usedIn = {};
+    boms.forEach(b => { if (!usedIn[b.component]) usedIn[b.component] = new Set(); usedIn[b.component].add(b.finished_good); });
+    const rm = inv.filter(i => i.item_class === 'RM').map(i => ({...i, used_in_count: usedIn[i.part_number] ? usedIn[i.part_number].size : 0}));
+    appState._rmData = rm; appState._rmFiltered = rm;
+    document.getElementById('rmCount').textContent = `${rm.length} items`;
+    renderRMTable(rm);
+}
+function filterRM(q) { const d=appState._rmData||[]; const f=q?d.filter(r=>r.part_number.toLowerCase().includes(q.toLowerCase())):d; appState._rmFiltered=f; renderRMTable(f); }
+function renderRMTable(data) {
+    document.getElementById('rmCount').textContent = `${data.length} items`;
+    document.getElementById('rmBody').innerHTML = data.map(r => `<tr>
+        <td>${r.part_number}</td>
+        <td class="num">${formatNum(r.on_hand_qty)}</td>
+        <td class="num" style="color:${(r.committed_qty||0)>0?'var(--orange)':'var(--text-muted)'}">${formatNum(r.committed_qty||0)}</td>
+        <td class="num" style="font-weight:600">${formatNum(r.available_qty!==undefined?r.available_qty:r.on_hand_qty)}</td>
+        <td class="num">${r.used_in_count}</td>
+    </tr>`).join('');
+}
+
+// ============================================================
+// RM DEMAND (BOM explosion with UOM conversion + monthly)
+// ============================================================
+function calculateRMDemand() {
+    const boms = appState.data.boms || [];
+    const inventory = appState.data.inventory || [];
+    const forecast = appState.forecast || {};
+    const fcstMonthly = appState.forecastMonthly || {};
+    const months = appState.monthLabels || [];
+
+    const invLookup = {};
+    inventory.forEach(i => { invLookup[i.part_number] = { on_hand: i.on_hand_qty||0, available: i.available_qty!==undefined?i.available_qty:i.on_hand_qty||0 }; });
+
+    const rmDemand = {};
+    boms.forEach(bom => {
+        const fgForecast = forecast[bom.finished_good];
+        if (!fgForecast || fgForecast <= 0) return;
+        const key = bom.component;
+        const weight = isWeightUom(bom.uom);
+        const qtyPerNorm = weight ? convertToKg(bom.qty_per, bom.uom) : bom.qty_per;
+        const uom = displayUom(bom.uom);
+
+        if (!rmDemand[key]) rmDemand[key] = { component:key, uom, annual_demand:0, used_in:new Set(), monthly_demand_arr: months.map(()=>0) };
+
+        rmDemand[key].annual_demand += qtyPerNorm * fgForecast;
+        rmDemand[key].used_in.add(bom.finished_good);
+
+        // Monthly breakdown
+        const fgMonthly = fcstMonthly[bom.finished_good];
+        if (fgMonthly) {
+            for (let m = 0; m < fgMonthly.length && m < rmDemand[key].monthly_demand_arr.length; m++) {
+                rmDemand[key].monthly_demand_arr[m] += qtyPerNorm * fgMonthly[m];
+            }
+        }
+    });
+
+    return Object.values(rmDemand).map(rm => {
+        const inv = invLookup[rm.component] || {on_hand:0, available:0};
+        const monthlyDemand = rm.annual_demand / 12;
+        const monthsOfStock = monthlyDemand > 0 ? inv.available / monthlyDemand : 999;
+        let status;
+        if (inv.available === 0 && rm.annual_demand > 0) status = 'oos';
+        else if (monthsOfStock < 1) status = 'critical';
+        else if (monthsOfStock < 3) status = 'atrisk';
+        else if (monthsOfStock <= 6) status = 'healthy';
+        else status = 'excess';
+        return { ...rm, used_in_count:rm.used_in.size, on_hand:inv.on_hand, available:inv.available,
+            monthly_demand: Math.round(monthlyDemand*100)/100, months_of_stock: Math.round(monthsOfStock*10)/10, status };
+    }).filter(rm => rm.annual_demand > 0).sort((a,b) => a.months_of_stock - b.months_of_stock);
+}
+
+function renderRMDemand() {
+    const data = calculateRMDemand();
+    appState._rmdemandData = data; appState._rmdemandFiltered = data;
+    const counts = {oos:0,critical:0,atrisk:0,healthy:0,excess:0};
+    data.forEach(r => { if (counts[r.status]!==undefined) counts[r.status]++; });
+    const months = appState.monthLabels || [];
+
+    document.getElementById('rmdemandCards').innerHTML = `
+        <div class="card"><div class="card-label">Materials with Demand</div><div class="card-value">${data.length}</div></div>
+        <div class="card"><div class="card-label">Out of Stock</div><div class="card-value gray">${counts.oos}</div></div>
+        <div class="card"><div class="card-label">Critical (&lt;1 mo)</div><div class="card-value red">${counts.critical}</div></div>
+        <div class="card"><div class="card-label">At Risk (1-3 mo)</div><div class="card-value orange">${counts.atrisk}</div></div>
+    `;
+    // Dynamic headers with monthly columns
+    document.getElementById('rmdemandHead').innerHTML = `<tr>
+        <th onclick="sortTable('rmdemand','component')">Raw Material</th>
+        <th>UOM</th><th onclick="sortTable('rmdemand','on_hand')">On Hand</th>
+        <th onclick="sortTable('rmdemand','available')">Available</th>
+        <th onclick="sortTable('rmdemand','annual_demand')">Annual</th>
+        ${months.map((m,i) => `<th style="font-size:11px" onclick="sortTable('rmdemand','m${i}')">${m.substring(0,3)}</th>`).join('')}
+        <th onclick="sortTable('rmdemand','months_of_stock')">MOS</th>
+        <th onclick="sortTable('rmdemand','status')">Status</th>
+    </tr>`;
+    renderRMDemandTable(data);
+}
+function filterRMDemand(q) { const d=appState._rmdemandData||[]; const f=q?d.filter(r=>r.component.toLowerCase().includes(q.toLowerCase())):d; appState._rmdemandFiltered=f; renderRMDemandTable(f); }
+function renderRMDemandTable(data) {
+    const months = appState.monthLabels || [];
+    document.getElementById('rmdemandCount').textContent = `${data.length} materials`;
+    document.getElementById('rmdemandBody').innerHTML = data.map(r => `<tr>
+        <td>${r.component}</td><td>${r.uom}</td>
+        <td class="num">${formatNum(r.on_hand,1)}</td>
+        <td class="num" style="font-weight:600">${formatNum(r.available,1)}</td>
+        <td class="num">${formatNum(Math.round(r.annual_demand))}</td>
+        ${(r.monthly_demand_arr||[]).map(v => `<td class="num" style="font-size:11px">${formatNum(Math.round(v))}</td>`).join('')}
+        <td class="num" style="font-weight:600">${r.months_of_stock>=999?'N/A':formatNum(r.months_of_stock,1)}</td>
+        <td>${getStatusBadge(r.status)}</td>
+    </tr>`).join('');
+}
+
+// ============================================================
+// CASE PACK BUILDER (with monthly + print sheet)
+// ============================================================
+function calculateCasePacks() {
+    const boms = appState.data.boms || [];
+    const inventory = appState.data.inventory || [];
+    const forecast = appState.forecast || {};
+    const fcstMonthly = appState.forecastMonthly || {};
+    const months = appState.monthLabels || [];
+
+    const invLookup = {};
+    inventory.forEach(i => { invLookup[i.part_number] = i.available_qty!==undefined?i.available_qty:i.on_hand_qty||0; });
+
+    const bomsByFG = {};
+    boms.forEach(b => { if (!bomsByFG[b.finished_good]) bomsByFG[b.finished_good]=[]; bomsByFG[b.finished_good].push(b); });
+
+    const kitPatterns = /case pack|collection|duo|kit|trio|gift box|edit|shaken|holiday spirit/i;
+    const results = [];
+
+    Object.entries(bomsByFG).forEach(([fg, components]) => {
+        if (!kitPatterns.test(fg)) return;
+        const fgForecast = forecast[fg] || 0;
+        const fgMonthly = fcstMonthly[fg] || months.map(()=>0);
+
+        let canBuild = Infinity, limitingComponent = '';
+        const compDetails = [];
+
+        components.forEach(comp => {
+            if (comp.qty_per <= 0 || comp.component.toLowerCase().includes('labour')) return;
+            const available = invLookup[comp.component] || 0;
+            const possible = Math.floor(available / comp.qty_per);
+            compDetails.push({ name: comp.component, qty_per: comp.qty_per, available, can_make: possible });
+            if (possible < canBuild) { canBuild = possible; limitingComponent = comp.component; }
+        });
+        if (canBuild === Infinity) canBuild = 0;
+
+        const monthlyDemand = fgForecast / 12;
+        let status;
+        if (canBuild === 0) status = 'critical';
+        else if (monthlyDemand > 0 && canBuild < monthlyDemand) status = 'atrisk';
+        else if (monthlyDemand > 0 && canBuild < monthlyDemand * 3) status = 'healthy';
+        else status = 'excess';
+
+        results.push({ kit_name:fg, annual_demand:Math.round(fgForecast), monthly_demand:Math.round(monthlyDemand),
+            monthly_arr: fgMonthly.map(v=>Math.round(v)),
+            can_build:canBuild, limiting_component:limitingComponent, components:compDetails, status });
+    });
+    return results.sort((a,b) => a.can_build - b.can_build);
+}
+
+function renderCasePack() {
+    const data = calculateCasePacks();
+    appState._casepackData = data; appState._casepackFiltered = data;
+    const months = appState.monthLabels || [];
+    const canBuildZero = data.filter(r=>r.can_build===0).length;
+    const canBuildLow = data.filter(r=>r.can_build>0&&r.can_build<r.monthly_demand).length;
+
+    document.getElementById('casepackCards').innerHTML = `
+        <div class="card"><div class="card-label">Kits / Case Packs</div><div class="card-value">${data.length}</div></div>
+        <div class="card"><div class="card-label">Cannot Build</div><div class="card-value red">${canBuildZero}</div></div>
+        <div class="card"><div class="card-label">Low Components</div><div class="card-value orange">${canBuildLow}</div></div>
+        <div class="card"><div class="card-label">Ready to Build</div><div class="card-value blue">${data.length-canBuildZero-canBuildLow}</div></div>
+    `;
+    document.getElementById('casepackHead').innerHTML = `<tr>
+        <th onclick="sortTable('casepack','kit_name')">Kit / Case Pack</th>
+        <th onclick="sortTable('casepack','annual_demand')">Annual</th>
+        ${months.map((m,i) => `<th style="font-size:11px">${m.substring(0,3)}</th>`).join('')}
+        <th onclick="sortTable('casepack','can_build')">Can Build</th>
+        <th>Limiting Component</th>
+        <th onclick="sortTable('casepack','status')">Status</th>
+    </tr>`;
+    renderCasePackTable(data);
+}
+function filterCasePack(q) { const d=appState._casepackData||[]; const f=q?d.filter(r=>r.kit_name.toLowerCase().includes(q.toLowerCase())):d; appState._casepackFiltered=f; renderCasePackTable(f); }
+function renderCasePackTable(data) {
+    document.getElementById('casepackCount').textContent = `${data.length} kits`;
+    document.getElementById('casepackBody').innerHTML = data.map(r => `<tr>
+        <td>${r.kit_name}</td>
+        <td class="num">${formatNum(r.annual_demand)}</td>
+        ${(r.monthly_arr||[]).map(v => `<td class="num" style="font-size:11px">${formatNum(v)}</td>`).join('')}
+        <td class="num" style="font-weight:600;color:${r.can_build===0?'var(--red)':r.can_build<r.monthly_demand?'var(--orange)':'var(--blue)'}">${formatNum(r.can_build)}</td>
+        <td style="font-size:12px;color:var(--text-muted)">${r.limiting_component}</td>
+        <td>${getStatusBadge(r.status)}</td>
+    </tr>`).join('');
+}
+
+function printCasePackSheet() {
+    const data = appState._casepackFiltered || [];
+    let html = '<html><head><title>Kanel - Case Pack Pick Sheet</title><style>body{font-family:Arial,sans-serif;font-size:12px;} table{border-collapse:collapse;width:100%;margin-bottom:20px;} th,td{border:1px solid #ccc;padding:4px 8px;text-align:left;} th{background:#f0f0f0;font-weight:bold;} .num{text-align:right;} h2{margin:20px 0 5px;} @media print{.no-print{display:none;}}</style></head><body>';
+    html += '<h1>Kanel Case Pack Pick Sheet - ' + new Date().toLocaleDateString('en-CA') + '</h1>';
+    data.forEach(kit => {
+        if (kit.can_build <= 0 && kit.monthly_demand <= 0) return;
+        const buildQty = Math.min(kit.can_build, kit.monthly_demand || kit.can_build);
+        html += `<h2>${kit.kit_name} (Build: ${buildQty})</h2>`;
+        html += '<table><tr><th>Component</th><th>Qty Per</th><th>Available</th><th>Need (x${buildQty})</th><th>Picked</th></tr>';
+        (kit.components||[]).forEach(c => {
+            html += `<tr><td>${c.name}</td><td class="num">${c.qty_per}</td><td class="num">${c.available}</td><td class="num">${Math.ceil(c.qty_per * buildQty)}</td><td style="width:60px"></td></tr>`;
+        });
+        html += '</table>';
+    });
+    html += '</body></html>';
+    const w = window.open('', '_blank');
+    w.document.write(html);
+    w.document.close();
+    w.print();
+}
+
+// ============================================================
+// AXIA PRODUCTION (MOQ 1000 + month selector + monthly view)
+// ============================================================
+function calculateAxia() {
+    const boms = appState.data.boms || [];
+    const inventory = appState.data.inventory || [];
+    const forecast = appState.forecast || {};
+    const fcstMonthly = appState.forecastMonthly || {};
+    const months = appState.monthLabels || [];
+    const buildMonths = appState.axiaBuildMonths || 3;
+
+    const invLookup = {};
+    inventory.forEach(i => { invLookup[i.part_number] = { on_hand:i.on_hand_qty||0, available:i.available_qty!==undefined?i.available_qty:i.on_hand_qty||0 }; });
+
+    const bomsByFG = {};
+    boms.forEach(b => { if (!bomsByFG[b.finished_good]) bomsByFG[b.finished_good]=[]; bomsByFG[b.finished_good].push(b); });
+
+    const kitPatterns = /case pack|collection|duo|kit|trio|gift box|edit|shaken|holiday spirit/i;
+    const axiaPatterns = /tube|bulk|label/i;
+    const monthNames = ['Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan'];
+    const results = [];
+
+    Object.entries(bomsByFG).forEach(([fg, components]) => {
+        if (kitPatterns.test(fg)) return;
+        if (!components.some(c => axiaPatterns.test(c.component))) return;
+        const fgForecast = forecast[fg] || 0;
+        if (fgForecast <= 0) return;
+
+        // Include case pack demand for this unit
+        let totalAnnualDemand = fgForecast;
+        Object.entries(bomsByFG).forEach(([cpFG, cpComps]) => {
+            if (!cpFG.includes('Case Pack')) return;
+            const cpFcst = forecast[cpFG] || 0;
+            if (cpFcst <= 0) return;
+            cpComps.forEach(c => { if (c.component === fg) totalAnnualDemand += c.qty_per * cpFcst; });
+        });
+
+        const fgMonthly = fcstMonthly[fg] || [];
+        const monthlyArr = months.map((m,i) => Math.round(fgMonthly[i] || totalAnnualDemand/12));
+
+        const inv = invLookup[fg] || {on_hand:0, available:0};
+        const weeklyDemand = totalAnnualDemand / 52;
+        const woh = weeklyDemand > 0 ? inv.available / weeklyDemand : 999;
+
+        // Stockout month
+        let stockoutMonth = '--';
+        let runningStock = inv.available;
+        for (let i = 0; i < 12; i++) {
+            runningStock -= (monthlyArr[i] || totalAnnualDemand/12);
+            if (runningStock <= 0) { stockoutMonth = monthNames[i]; break; }
+        }
+
+        // Suggested qty: cover buildMonths of demand, rounded to MOQ of 1000
+        const demandForPeriod = monthlyArr.slice(0, buildMonths).reduce((s,v) => s+v, 0);
+        const rawNeed = Math.max(0, demandForPeriod - inv.available);
+        const moqQty = rawNeed > 0 ? Math.ceil(rawNeed / 1000) * 1000 : 0;
+
+        let status;
+        if (inv.available === 0) status = 'oos';
+        else if (woh < 4) status = 'critical';
+        else if (woh < 8) status = 'atrisk';
+        else if (woh <= 16) status = 'healthy';
+        else status = 'excess';
+
+        // Monthly running stock projection
+        const projection = [];
+        let proj = inv.available;
+        for (let i = 0; i < months.length; i++) {
+            proj -= (monthlyArr[i] || 0);
+            projection.push(Math.round(proj));
+        }
+
+        results.push({ sku:fg, on_hand:inv.on_hand, available:inv.available,
+            annual_demand:Math.round(totalAnnualDemand), weekly_demand:Math.round(weeklyDemand*10)/10,
+            woh:Math.round(woh*10)/10, stockout_month:stockoutMonth,
+            raw_need:rawNeed, produce_qty:moqQty,
+            monthly_demand: monthlyArr, projection, status });
+    });
+    return results.sort((a,b) => a.woh - b.woh);
+}
+
+function renderAxia() {
+    const data = calculateAxia();
+    appState._axiaData = data; appState._axiaFiltered = data;
+    const months = appState.monthLabels || [];
+    const counts = {oos:0,critical:0,atrisk:0,healthy:0,excess:0};
+    data.forEach(r => { if (counts[r.status]!==undefined) counts[r.status]++; });
+    const totalProd = data.reduce((s,r) => s+r.produce_qty, 0);
+
+    document.getElementById('axiaCards').innerHTML = `
+        <div class="card"><div class="card-label">Axia SKUs</div><div class="card-value">${data.length}</div></div>
+        <div class="card"><div class="card-label">Need Production</div><div class="card-value red">${counts.oos+counts.critical+counts.atrisk}</div></div>
+        <div class="card"><div class="card-label">Healthy</div><div class="card-value blue">${counts.healthy}</div></div>
+        <div class="card"><div class="card-label">Total MO Units</div><div class="card-value">${formatNum(totalProd)}</div></div>
+    `;
+    document.getElementById('axiaFilters').innerHTML = `
+        <input type="text" class="search-input" placeholder="Search SKUs..." oninput="filterAxia(this.value)">
+        <label style="color:var(--text-muted);font-size:13px;margin-left:16px;">Build for
+            <select id="axiaBuildMonths" onchange="appState.axiaBuildMonths=parseInt(this.value);renderAxia()" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:6px;">
+                ${[1,2,3,4,5,6].map(n => `<option value="${n}" ${n===appState.axiaBuildMonths?'selected':''}>${n} month${n>1?'s':''}</option>`).join('')}
+            </select>
+            (MOQ: 1,000)
+        </label>
+    `;
+    document.getElementById('axiaHead').innerHTML = `<tr>
+        <th onclick="sortTable('axia','sku')">SKU</th>
+        <th onclick="sortTable('axia','available')">Avail</th>
+        <th onclick="sortTable('axia','woh')">WOH</th>
+        <th onclick="sortTable('axia','stockout_month')">Stockout</th>
+        ${months.map((m,i) => `<th style="font-size:11px">${m.substring(0,3)}</th>`).join('')}
+        <th onclick="sortTable('axia','produce_qty')">MO Qty</th>
+        <th onclick="sortTable('axia','status')">Status</th>
+    </tr>`;
+    renderAxiaTable(data);
+}
+function filterAxia(q) { const d=appState._axiaData||[]; const f=q?d.filter(r=>r.sku.toLowerCase().includes(q.toLowerCase())):d; appState._axiaFiltered=f; renderAxiaTable(f); }
+function renderAxiaTable(data) {
+    const months = appState.monthLabels || [];
+    document.getElementById('axiaCount').textContent = `${data.length} SKUs`;
+    document.getElementById('axiaBody').innerHTML = data.map(r => `<tr>
+        <td>${r.sku}</td>
+        <td class="num">${formatNum(r.available)}</td>
+        <td class="num" style="font-weight:600">${r.woh>=999?'N/A':formatNum(r.woh,1)}</td>
+        <td style="color:${r.stockout_month!=='--'?'var(--red)':'var(--text-muted)'}">${r.stockout_month}</td>
+        ${(r.projection||[]).map((v,i) => `<td class="num" style="font-size:11px;color:${v<=0?'var(--red)':v<(r.monthly_demand[i]||0)?'var(--orange)':'var(--text-muted)'}">${formatNum(v)}</td>`).join('')}
+        <td class="num" style="font-weight:600;color:${r.produce_qty>0?'var(--accent)':'var(--text-muted)'}">${formatNum(r.produce_qty)}</td>
+        <td>${getStatusBadge(r.status)}</td>
+    </tr>`).join('');
+}
+
+// ---- POs ----
+function renderPOs() {
+    const pos = appState.data.open_pos || [];
+    appState._poData = pos; appState._poFiltered = pos;
+    const vendors = new Set(pos.map(p => p.vendor));
+    document.getElementById('poCards').innerHTML = `
+        <div class="card"><div class="card-label">Open PO Lines</div><div class="card-value">${pos.length}</div></div>
+        <div class="card"><div class="card-label">Vendors</div><div class="card-value">${vendors.size}</div></div>
+    `;
+    renderPOTable(pos);
+}
+function filterPOs(q) { const d=appState._poData||[]; const f=q?d.filter(r=>(r.po_num+r.vendor+r.part).toLowerCase().includes(q.toLowerCase())):d; appState._poFiltered=f; renderPOTable(f); }
+function renderPOTable(data) {
+    document.getElementById('poCount').textContent = `${data.length} lines`;
+    document.getElementById('poBody').innerHTML = data.map(r => `<tr>
+        <td style="font-family:var(--mono)">${r.po_num}</td><td>${r.vendor}</td><td>${r.part}</td>
+        <td class="num">${formatNum(r.qty_remaining)}</td>
+        <td>${r.expected_date ? new Date(r.expected_date).toLocaleDateString('en-CA') : '--'}</td>
+        <td><span class="badge ${r.status==='Issued'?'badge-healthy':'badge-atrisk'}">${r.status}</span></td>
+    </tr>`).join('');
+}
+
+// ---- BOMs ----
+function renderBOMs() { const b = appState.data.boms||[]; appState._bomData=b; appState._bomFiltered=b; renderBOMTable(b); }
+function filterBOMs(q) { const d=appState._bomData||[]; const f=q?d.filter(r=>(r.finished_good+r.component).toLowerCase().includes(q.toLowerCase())):d; appState._bomFiltered=f; renderBOMTable(f); }
+function renderBOMTable(data) {
+    document.getElementById('bomCount').textContent = `${data.length} rows`;
+    document.getElementById('bomBody').innerHTML = data.map(r => `<tr><td>${r.finished_good}</td><td>${r.component}</td><td class="num">${r.qty_per}</td><td>${r.uom}</td></tr>`).join('');
+}
+
+// ============================================================
+// CSV EXPORT
+// ============================================================
+function exportCSV(tab) {
+    let rows = [], filename = '';
+    const months = appState.monthLabels || [];
+    if (tab === 'woh') {
+        rows = [['SKU','Type','On Hand','Committed','Available','Weekly Forecast','DOH','WOH','MOH','Status']];
+        (appState._wohFiltered||[]).forEach(r => rows.push([r.part_number,r.item_class,r.on_hand_qty,r.committed_qty||0,r.available_qty,r.weekly_forecast||'',r.doh||'',r.woh||'',r.moh||'',getStatusLabel(r.status)]));
+        filename = 'Kanel_WOH.csv';
+    } else if (tab === 'fg') {
+        rows = [['SKU','On Hand','Committed','Available','Components']];
+        (appState._fgFiltered||[]).forEach(r => rows.push([r.part_number,r.on_hand_qty,r.committed_qty||0,r.available_qty,r.component_count]));
+        filename = 'Kanel_FG.csv';
+    } else if (tab === 'rm') {
+        rows = [['Material','On Hand','Committed','Available','Used In']];
+        (appState._rmFiltered||[]).forEach(r => rows.push([r.part_number,r.on_hand_qty,r.committed_qty||0,r.available_qty,r.used_in_count]));
+        filename = 'Kanel_RM.csv';
+    } else if (tab === 'rmdemand') {
+        rows = [['Raw Material','UOM','On Hand','Available','Annual Demand',...months,'Months of Stock','Status']];
+        (appState._rmdemandFiltered||[]).forEach(r => rows.push([r.component,r.uom,r.on_hand,r.available,Math.round(r.annual_demand),...(r.monthly_demand_arr||[]).map(v=>Math.round(v)),r.months_of_stock,getStatusLabel(r.status)]));
+        filename = 'Kanel_RM_Demand.csv';
+    } else if (tab === 'casepack') {
+        rows = [['Kit','Annual Demand',...months,'Can Build Now','Limiting Component','Status']];
+        (appState._casepackFiltered||[]).forEach(r => rows.push([r.kit_name,r.annual_demand,...(r.monthly_arr||[]),r.can_build,r.limiting_component,getStatusLabel(r.status)]));
+        filename = 'Kanel_CasePack.csv';
+    } else if (tab === 'axia') {
+        rows = [['SKU','Available','WOH','Stockout',...months.map(m=>m+' Proj'),'MO Qty (MOQ 1000)','Status']];
+        (appState._axiaFiltered||[]).forEach(r => rows.push([r.sku,r.available,r.woh,r.stockout_month,...(r.projection||[]),r.produce_qty,getStatusLabel(r.status)]));
+        filename = 'Kanel_Axia.csv';
+    } else if (tab === 'pos') {
+        rows = [['PO','Vendor','Part','Qty Remaining','Expected','Status']];
+        (appState._poFiltered||[]).forEach(r => rows.push([r.po_num,r.vendor,r.part,r.qty_remaining,r.expected_date,r.status]));
+        filename = 'Kanel_OpenPOs.csv';
+    } else if (tab === 'boms') {
+        rows = [['Finished Good','Component','Qty Per','UOM']];
+        (appState._bomFiltered||[]).forEach(r => rows.push([r.finished_good,r.component,r.qty_per,r.uom]));
+        filename = 'Kanel_BOMs.csv';
+    }
+    if (!rows.length) return;
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+}
+
+// ============================================================
+// EXPORT ALL (multi-sheet XLSX)
+// ============================================================
+async function exportAllXLSX() {
+    if (!window.XLSX) {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+        document.head.appendChild(s);
+        await new Promise(r => s.onload = r);
+    }
+    const wb = XLSX.utils.book_new();
+    const months = appState.monthLabels || [];
+
+    // WOH
+    const wohRows = [['SKU','Type','On Hand','Committed','Available','Weekly Fcst','DOH','WOH','MOH','Status']];
+    (appState._wohData||[]).forEach(r => wohRows.push([r.part_number,r.item_class,r.on_hand_qty,r.committed_qty||0,r.available_qty,r.weekly_forecast||'',r.doh||'',r.woh||'',r.moh||'',getStatusLabel(r.status)]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wohRows), 'Weeks on Hand');
+
+    // RM Demand
+    const rmRows = [['Raw Material','UOM','On Hand','Available','Annual',...months,'MOS','Status']];
+    (appState._rmdemandData||[]).forEach(r => rmRows.push([r.component,r.uom,r.on_hand,r.available,Math.round(r.annual_demand),...(r.monthly_demand_arr||[]).map(v=>Math.round(v)),r.months_of_stock,getStatusLabel(r.status)]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rmRows), 'RM Demand');
+
+    // Case Pack
+    const cpRows = [['Kit','Annual',...months,'Can Build','Limiting Component','Status']];
+    (appState._casepackData||[]).forEach(r => cpRows.push([r.kit_name,r.annual_demand,...(r.monthly_arr||[]),r.can_build,r.limiting_component,getStatusLabel(r.status)]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(cpRows), 'Case Pack Builder');
+
+    // Axia
+    const axRows = [['SKU','Available','WOH','Stockout',...months.map(m=>m+' Proj'),'MO Qty','Status']];
+    (appState._axiaData||[]).forEach(r => axRows.push([r.sku,r.available,r.woh,r.stockout_month,...(r.projection||[]),r.produce_qty,getStatusLabel(r.status)]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(axRows), 'Axia Production');
+
+    // Open POs
+    const poRows = [['PO','Vendor','Part','Qty Remaining','Expected','Status']];
+    (appState._poData||[]).forEach(r => poRows.push([r.po_num,r.vendor,r.part,r.qty_remaining,r.expected_date,r.status]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(poRows), 'Open POs');
+
+    XLSX.writeFile(wb, `Kanel_Hub_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// ============================================================
+// CONNECTION & DATA LOADING
+// ============================================================
+async function saveConfig() {
+    const url = document.getElementById('setupUrl').value.trim().replace(/\/$/, '');
+    const errEl = document.getElementById('setupError');
+    if (!url) { errEl.textContent = 'URL is required.'; errEl.style.display = 'block'; return; }
+    errEl.textContent = 'Testing connection...'; errEl.style.display = 'block'; errEl.style.color = 'var(--text-muted)';
+    try {
+        const resp = await fetch(`${url}/api/health`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        if (data.status !== 'ok') throw new Error('Unexpected response');
+        appState.config = { url, key: '' };
+        localStorage.setItem('kanel-hub-config', JSON.stringify(appState.config));
+        document.getElementById('setupScreen').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        refreshData();
+    } catch (e) {
+        errEl.style.color = 'var(--red)';
+        errEl.textContent = `Connection failed: ${e.message}. Is the proxy running?`;
+    }
+}
+
+async function refreshData() {
+    const btn = document.getElementById('refreshBtn');
+    btn.disabled = true; btn.innerHTML = '<div class="loading-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></div>Loading...';
+    try {
+        const resp = await fetch(`${appState.config.url}/api/woh`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        appState.data = await resp.json();
+        document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleString('en-CA', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+        renderAll();
+    } catch (e) {
+        alert('Failed to load data: ' + e.message);
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg> Refresh';
+}
+
+function loadConfig() {
+    const saved = localStorage.getItem('kanel-hub-config');
+    if (saved) {
+        try {
+            appState.config = JSON.parse(saved);
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+
+            // Load saved forecast
+            const fc = localStorage.getItem('kanel-hub-forecast');
+            if (fc) appState.forecast = JSON.parse(fc);
+            const fm = localStorage.getItem('kanel-hub-forecast-monthly');
+            if (fm) appState.forecastMonthly = JSON.parse(fm);
+            const ml = localStorage.getItem('kanel-hub-forecast-months');
+            if (ml) appState.monthLabels = JSON.parse(ml);
+
+            refreshData();
+        } catch(e) { localStorage.removeItem('kanel-hub-config'); }
+    }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadConfig();
+</script>
+</body>
+</html>
