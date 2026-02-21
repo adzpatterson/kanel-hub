@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kanel Supply Chain Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0c;--surface:#141418;--surface-2:#1c1c22;--border:#2a2a32;--text:#e8e8ec;--text-muted:#8b8b96;--accent:#d4a853;--accent-dim:#d4a85320;--red:#e54d4d;--red-bg:#e54d4d15;--orange:#e8923a;--orange-bg:#e8923a15;--blue:#4d9ee5;--blue-bg:#4d9ee515;--green:#4dc77a;--green-bg:#4dc77a15;--gray:#555;--gray-bg:#55555515;--radius:10px;--font:'DM Sans',-apple-system,sans-serif;--mono:'JetBrains Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+.header{display:flex;align-items:center;justify-content:space-between;padding:20px 32px;border-bottom:1px solid var(--border);background:var(--surface)}
+.header-left{display:flex;align-items:center;gap:16px}.header-right{display:flex;align-items:center;gap:12px}
+.logo{font-size:24px;font-weight:700;color:var(--accent);letter-spacing:-0.5px}.logo-sub{font-size:12px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase}
+.last-updated{font-size:12px;color:var(--text-muted);font-family:var(--mono)}
+.refresh-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);cursor:pointer;font-family:var(--font);font-size:13px;transition:all .15s}
+.refresh-btn:hover{border-color:var(--accent);color:var(--accent)}.refresh-btn svg{width:16px;height:16px}
+.nav{display:flex;gap:2px;padding:0 32px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto}
+.nav-tab{padding:12px 20px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.nav-tab:hover{color:var(--text)}.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.main{padding:24px 32px}.hidden{display:none!important}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.card-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:4px}
+.card-value{font-size:22px;font-weight:700;font-family:var(--mono)}
+.card-value.red{color:var(--red)}.card-value.orange{color:var(--orange)}.card-value.blue{color:var(--blue)}.card-value.green{color:var(--green)}.card-value.gray{color:var(--gray)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center}
+.filter-btn{padding:6px 14px;background:transparent;border:1px solid var(--border);border-radius:20px;color:var(--text-muted);cursor:pointer;font-family:var(--font);font-size:12px;transition:all .15s;position:relative}
+.filter-btn:hover{border-color:var(--text);color:var(--text)}.filter-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.filter-btn .count{margin-left:6px;font-family:var(--mono);font-size:11px;opacity:.7}
+.filter-btn .tip{font-size:10px;color:var(--text-muted);display:block;margin-top:1px;font-weight:400}
+.search-input{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px;color:var(--text);font-family:var(--font);font-size:13px;width:220px;outline:none}
+.search-input:focus{border-color:var(--accent)}
+.export-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.export-btn{padding:6px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-muted);cursor:pointer;font-family:var(--font);font-size:12px}
+.export-btn:hover{border-color:var(--accent);color:var(--accent)}
+.result-count{font-size:12px;color:var(--text-muted);font-family:var(--mono)}
+.table-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.table-scroll{overflow-x:auto;max-height:70vh;overflow-y:auto}
+table{width:100%;border-collapse:collapse}
+thead{position:sticky;top:0;z-index:2}
+thead th{padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);background:var(--surface-2);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--text)}
+tbody td{padding:10px 14px;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr:hover{background:var(--surface-2)}
+.num{font-family:var(--mono);text-align:right}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;letter-spacing:.3px}
+.badge-oos{background:var(--gray-bg);color:#999;border:1px solid #44444480}
+.badge-critical{background:var(--red-bg);color:var(--red);border:1px solid #e54d4d40}
+.badge-atrisk{background:var(--orange-bg);color:var(--orange);border:1px solid #e8923a40}
+.badge-healthy{background:var(--blue-bg);color:var(--blue);border:1px solid #4d9ee540}
+.badge-excess{background:var(--green-bg);color:var(--green);border:1px solid #4dc77a40}
+.woh-bar{width:100px;height:8px;background:var(--surface);border-radius:4px;overflow:hidden}
+.woh-bar-fill{height:100%;border-radius:4px;transition:width .3s}
+.bar-cell{padding:10px 14px}
+.setup-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;padding:32px}
+.setup-screen h2{font-size:28px;color:var(--accent)}.setup-screen p{color:var(--text-muted);text-align:center;max-width:400px}
+.setup-screen label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.setup-screen input{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;color:var(--text);font-family:var(--mono);font-size:14px;width:320px;text-align:center}
+.setup-btn{padding:10px 32px;background:var(--accent);border:none;border-radius:var(--radius);color:#000;font-weight:600;cursor:pointer;font-family:var(--font);font-size:14px}
+.setup-error{color:var(--red);font-size:13px;display:none;text-align:center}
+.loading-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.po-group{cursor:pointer;background:var(--surface-2)}.po-group:hover{background:#1f1f28}.po-group td{font-weight:600;padding:12px 14px}
+.po-detail{display:none}.po-detail.open{display:table-row}.po-detail td{padding-left:40px;font-size:13px;color:var(--text-muted)}
+select.hs{background:var(--surface-2);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:6px;font-family:var(--font);font-size:13px}
+.receipt-row td{background:#1a1a20;font-size:11px;color:var(--green);font-style:italic;border-bottom:2px solid var(--border)}
+.section-header{font-size:14px;font-weight:600;color:var(--accent);padding:20px 0 12px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.mo-create-bar{display:flex;gap:12px;align-items:center;margin-bottom:16px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.mo-create-btn{padding:8px 20px;background:var(--accent);border:none;border-radius:var(--radius);color:#000;font-weight:600;cursor:pointer;font-family:var(--font);font-size:13px}
+.mo-create-btn:hover{opacity:.9}
+.sub-tab{display:inline-block;padding:8px 16px;font-size:12px;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-right:4px}
+.sub-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+@media(max-width:768px){.header{padding:16px}.nav{padding:0 16px}.main{padding:16px}.cards{grid-template-columns:repeat(2,1fr)}.search-input{width:100%}}
+</style>
+</head>
+<body>
+<div id="setupScreen" class="setup-screen">
+<h2>Kanel Supply Chain Hub</h2>
+<p>Make sure the proxy is running.<br><code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:var(--mono)">node proxy.js</code></p>
+<label>Proxy URL</label>
+<input type="text" id="setupUrl" value="http://localhost:3847">
+<button class="setup-btn" onclick="saveConfig()">Connect</button>
+<div id="setupError" class="setup-error"></div>
+</div>
+
+<div id="app" class="hidden">
+<div class="header">
+<div class="header-left"><div><div class="logo">Kanel</div><div class="logo-sub">Supply Chain Hub</div></div></div>
+<div class="header-right">
+<span class="last-updated" id="lastUpdated"></span>
+<button class="refresh-btn" onclick="exportAllXLSX()" style="background:transparent;border:1px solid var(--border);margin-right:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export All</button>
+<button class="refresh-btn" id="refreshBtn" onclick="refreshData()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>Refresh</button>
+</div></div>
+
+<div class="nav">
+<div class="nav-tab active" data-tab="woh" onclick="switchTab('woh')">Weeks on Hand</div>
+<div class="nav-tab" data-tab="rmdemand" onclick="switchTab('rmdemand')">RM Demand</div>
+<div class="nav-tab" data-tab="casepack" onclick="switchTab('casepack')">Case Pack Builder</div>
+<div class="nav-tab" data-tab="axia" onclick="switchTab('axia')">Axia Production</div>
+<div class="nav-tab" data-tab="mos" onclick="switchTab('mos')">Manufacturing Orders</div>
+<div class="nav-tab" data-tab="pos" onclick="switchTab('pos')">Open POs</div>
+<div class="nav-tab" data-tab="boms" onclick="switchTab('boms')">BOMs</div>
+<div class="nav-tab" data-tab="manage" onclick="switchTab('manage')">Manage Items</div>
+<div class="nav-tab" data-tab="guide" onclick="switchTab('guide')">How It Works</div>
+</div>
+
+<div class="main">
+<!-- WOH (FG only) -->
+<div id="tab-woh" class="tab-content"><div class="cards" id="wohCards"></div><div class="filters" id="wohFilters"></div>
+<div class="export-bar"><span class="result-count" id="wohCount"></span><button class="export-btn" onclick="xcsv('woh')">Export CSV</button></div>
+<div class="table-wrap"><div class="table-scroll"><table><thead><tr>
+<th onclick="srt('woh','pn')">Product</th><th onclick="srt('woh','cat')">Category</th><th onclick="srt('woh','oh')">On Hand</th><th onclick="srt('woh','cm')">Committed</th><th onclick="srt('woh','av')">Available</th><th onclick="srt('woh','wf')">Wkly Fcst</th><th onclick="srt('woh','doh')">DOH</th><th onclick="srt('woh','woh')">WOH</th><th onclick="srt('woh','moh')">MOH</th><th>Bar</th><th onclick="srt('woh','replen')">Replen Date</th><th onclick="srt('woh','replenFlag')">Replen Status</th><th onclick="srt('woh','st')">Status</th>
+</tr></thead><tbody id="wohBody"></tbody></table></div></div></div>
+
+<!-- RM DEMAND -->
+<div id="tab-rmdemand" class="tab-content hidden"><div class="cards" id="rmdemandCards"></div>
+<div class="filters"><input type="text" class="search-input" placeholder="Search materials..." oninput="S.rmQ=this.value;rRMD()">
+<select class="hs" id="rmCatF" onchange="S.rmCat=this.value;rRMD()"><option value="all">All Categories</option></select></div>
+<div class="export-bar"><span class="result-count" id="rmdemandCount"></span><button class="export-btn" onclick="xcsv('rmdemand')">Export CSV</button></div>
+<div class="table-wrap"><div class="table-scroll"><table><thead id="rmdemandHead"></thead><tbody id="rmdemandBody"></tbody></table></div></div></div>
+
+<!-- CASE PACK BUILDER -->
+<div id="tab-casepack" class="tab-content hidden"><div class="cards" id="casepackCards"></div><div class="filters" id="cpFilters"></div>
+<div class="export-bar"><span class="result-count" id="casepackCount"></span>
+<button class="export-btn" onclick="printWO()" style="margin-right:8px">Print Work Order</button>
+<button class="export-btn" onclick="xcsv('casepack')">Export CSV</button></div>
+<div class="table-wrap"><div class="table-scroll"><table><thead id="cpHead"></thead><tbody id="cpBody"></tbody></table></div></div></div>
+
+<!-- AXIA PRODUCTION -->
+<div id="tab-axia" class="tab-content hidden"><div class="cards" id="axiaCards"></div><div class="filters" id="axiaFilters"></div>
+<div id="axiaCreateBar" class="mo-create-bar hidden">
+<span id="axiaSelCount" style="font-size:13px;color:var(--text-muted)">0 selected</span>
+<button class="mo-create-btn" onclick="generateMOImport()">Create MOs in Fishbowl</button>
+<span style="font-size:11px;color:var(--text-muted)">Creates Manufacturing Orders via API in Entered status. Issue before sending to Axia.</span>
+</div>
+<div class="export-bar"><span class="result-count" id="axiaCount"></span><button class="export-btn" onclick="xcsv('axia')">Export CSV</button></div>
+<div class="table-wrap"><div class="table-scroll"><table><thead id="axiaHead"></thead><tbody id="axiaBody"></tbody></table></div></div></div>
+
+<!-- MANUFACTURING ORDERS -->
+<div id="tab-mos" class="tab-content hidden">
+<div style="margin-bottom:16px">
+<span class="sub-tab active" data-sub="open" onclick="switchMOSub('open')">Open MOs</span>
+<span class="sub-tab" data-sub="rmreq" onclick="switchMOSub('rmreq')">RM Requirements</span>
+<span class="sub-tab" data-sub="schedule" onclick="switchMOSub('schedule')">Production Schedule</span>
+<span class="sub-tab" data-sub="closed" onclick="switchMOSub('closed')">Completed</span>
+</div>
+<div id="mo-open"><div class="cards" id="moCards"></div>
+<div class="filters"><input type="text" class="search-input" placeholder="Search MOs..." oninput="S.moQ=this.value;rMO()"></div>
+<div class="export-bar"><span class="result-count" id="moCount"></span><button class="export-btn" onclick="xcsv('mo-open')">Export CSV</button></div>
+<div class="table-wrap"><div class="table-scroll"><table><thead><tr>
+<th>MO # / Scheduled</th><th>Products</th><th>Lines</th><th>Total Qty</th><th>Status</th>
+</tr></thead><tbody id="moBody"></tbody></table></div></div></div>
+<div id="mo-rmreq" class="hidden">
+<div class="section-header">Consolidated Raw Materials Required for All Open MOs</div>
+<div class="export-bar"><span class="result-count" id="moRMCount"></span>
+<button class="export-btn" onclick="printMORM()" style="margin-right:8px">Print</button>
+<button class="export-btn" onclick="xcsv('mo-rm')">Export CSV</button></div>
+<div class="table-wrap"><div class="table-scroll"><table><thead><tr>
+<th onclick="srt('morm','pn')">Raw Material</th><th onclick="srt('morm','cat')">Category</th><th onclick="srt('morm','qty')">Qty Required</th><th>UOM</th><th onclick="srt('morm','oh')">On Hand</th><th onclick="srt('morm','short')">Shortage</th><th>Used By MOs</th>
+</tr></thead><tbody id="moRMBody"></tbody></table></div></div></div>
+<div id="mo-schedule" class="hidden">
+<div class="section-header">Axia Production Schedule</div>
+<div class="export-bar"><span class="result-count" id="moSchedCount"></span>
+<button class="export-btn" onclick="printSchedule()" style="margin-right:8px">Print for Axia</button>
+<button class="export-btn" onclick="xcsv('mo-sched')">Export CSV</button></div>
+<div class="table-wrap"><div class="table-scroll"><table><thead><tr>
+<th>Run Month</th><th>MO #</th><th>SKU</th><th>Product Name</th><th>Category</th><th>Qty</th><th>Status</th>
+</tr></thead><tbody id="moSchedBody"></tbody></table></div></div></div>
+<div id="mo-closed" class="hidden">
+<div class="section-header">Recently Completed Manufacturing Orders</div>
+<div class="export-bar"><span class="result-count" id="moClosedCount"></span><button class="export-btn" onclick="xcsv('mo-closed')">Export CSV</button></div>
+<div class="table-wrap"><div class="table-scroll"><table><thead><tr>
+<th>MO #</th><th>Part</th><th>Qty Ordered</th><th>Qty Fulfilled</th><th>Completed</th>
+</tr></thead><tbody id="moClosedBody"></tbody></table></div></div></div>
+</div>
+
+<!-- OPEN POs -->
+<div id="tab-pos" class="tab-content hidden"><div class="cards" id="poCards"></div>
+<div class="filters"><input type="text" class="search-input" placeholder="Search POs..." oninput="S.poQ=this.value;rPO()"></div>
+<div class="export-bar"><span class="result-count" id="poCount"></span><button class="export-btn" onclick="xcsv('pos')">Export CSV</button></div>
+<div class="table-wrap"><div class="table-scroll"><table><thead><tr>
+<th>PO # / Vendor</th><th>Items</th><th>Lines</th><th>Qty Remaining</th><th>Expected</th><th>Status</th>
+</tr></thead><tbody id="poBody"></tbody></table></div></div></div>
+
+<!-- BOMs -->
+<div id="tab-boms" class="tab-content hidden">
+<div class="filters"><input type="text" class="search-input" placeholder="Search BOMs..." oninput="S.bomQ=this.value;rBOM()"></div>
+<div class="export-bar"><span class="result-count" id="bomCount"></span><button class="export-btn" onclick="xcsv('boms')">Export CSV</button></div>
+<div class="table-wrap"><div class="table-scroll"><table><thead><tr>
+<th onclick="srt('boms','fg')">Finished Good</th><th onclick="srt('boms','cp')">Component</th><th>Qty Per</th><th>UOM</th>
+</tr></thead><tbody id="bomBody"></tbody></table></div></div></div>
+
+<!-- MANAGE ITEMS -->
+<div id="tab-manage" class="tab-content hidden">
+<div style="padding:0 0 16px">
+<p style="color:var(--text-muted);margin-bottom:12px">Control which items appear in reports. Excluded items are hidden from all tabs.</p>
+<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+<input type="text" class="search-input" id="manageSearch" placeholder="Search items..." oninput="rManage()" style="flex:1;min-width:200px">
+<select class="hs" id="manageFilter" onchange="rManage()"><option value="all">All</option><option value="included">Included</option><option value="excluded">Excluded</option><option value="fg">Finished Goods</option><option value="rm">Raw Materials</option></select>
+<button class="filter-btn" onclick="autoExclude()" style="border-color:var(--orange);color:var(--orange)">Auto-Exclude Junk</button>
+</div>
+<div class="export-bar"><span class="result-count" id="manageCount"></span></div>
+</div>
+<div class="table-wrap"><div class="table-scroll"><table><thead><tr><th style="width:60px">Include</th><th>Part Number</th><th>Type</th><th>On Hand</th></tr></thead>
+<tbody id="manageBody"></tbody></table></div></div></div>
+
+<!-- HOW IT WORKS GUIDE -->
+<div id="tab-guide" class="tab-content hidden">
+<div style="max-width:860px;line-height:1.8;color:var(--text)">
+
+<div style="margin-bottom:32px">
+<h2 style="color:var(--accent);font-size:20px;margin-bottom:8px">How This Hub Works</h2>
+<p style="color:var(--text-muted)">This page explains every section of the Kanel Supply Chain Hub: what it shows, how the numbers are calculated, and what actions you can take. If you can read a spreadsheet, you can understand everything here.</p>
+</div>
+
+<div style="margin-bottom:32px">
+<h3 style="color:var(--accent);font-size:16px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px">Where the Data Comes From</h3>
+<p>Every number in this hub comes from two sources:</p>
+<p style="margin:8px 0"><span style="color:var(--blue);font-weight:600">Fishbowl (live)</span> -- Our inventory management system. When you hit Refresh, the hub pulls current inventory levels, open Purchase Orders, open Manufacturing Orders, and Bills of Materials directly from Fishbowl's database. This is real-time data.</p>
+<p style="margin:8px 0"><span style="color:var(--blue);font-weight:600">Forecast (uploaded)</span> -- A spreadsheet containing our monthly sales forecast for each product. This is uploaded manually and tells the hub how much of each product we expect to sell per month. Without a forecast uploaded, the hub can still show inventory levels but cannot calculate weeks of supply or predict stockouts.</p>
+</div>
+
+<div style="margin-bottom:32px">
+<h3 style="color:var(--accent);font-size:16px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px">1. Weeks on Hand (WOH)</h3>
+<p><b>Purpose:</b> Shows every finished product we sell and how long our current stock will last based on forecasted demand.</p>
+<p style="margin:12px 0"><b>Key columns explained:</b></p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">On Hand</span> -- Total physical units in the warehouse right now (from Fishbowl).</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Committed</span> -- Units already promised to open sales orders. These are spoken for but haven't shipped yet.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Available</span> -- On Hand minus Committed. This is what we can actually sell. <b>All calculations use this number, not On Hand.</b></p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Weekly Forecast</span> -- Annual forecast divided by 52 weeks. How many units per week we expect to sell.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">DOH / WOH / MOH</span> -- Days, Weeks, and Months of supply. All calculated the same way: <b>Available units / Weekly Forecast</b>, then converted to the right time unit. Example: 500 available / 50 per week = 10 WOH = 70 DOH = 2.3 MOH.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Replen Date</span> -- If there is an open Manufacturing Order for this product in Fishbowl, this shows when that MO is scheduled to complete. The number below it is the total units coming in from all open MOs.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Replen Status</span> -- Compares when we'll run out vs. when the MO arrives. <span class="badge badge-healthy">ON TIME</span> means the MO is scheduled before we'd stock out. <span class="badge badge-critical">LATE</span> means we'll run out before the MO arrives. <span class="badge badge-oos">NO MO</span> means the product needs stock but no Manufacturing Order exists.</p>
+
+<p style="margin:16px 0 8px"><b>Status thresholds:</b></p>
+<p style="margin:4px 0 4px 16px"><span class="badge badge-oos">OOS</span> 0 units available</p>
+<p style="margin:4px 0 4px 16px"><span class="badge badge-critical">CRITICAL</span> Less than 4 weeks of supply</p>
+<p style="margin:4px 0 4px 16px"><span class="badge badge-atrisk">AT RISK</span> 4 to 8 weeks of supply</p>
+<p style="margin:4px 0 4px 16px"><span class="badge badge-healthy">HEALTHY</span> 8 to 20 weeks of supply</p>
+<p style="margin:4px 0 4px 16px"><span class="badge badge-excess">EXCESS</span> More than 20 weeks of supply</p>
+</div>
+
+<div style="margin-bottom:32px">
+<h3 style="color:var(--accent);font-size:16px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px">2. RM Demand (Raw Material Demand)</h3>
+<p><b>Purpose:</b> Shows every raw material (tubes, labels, bulk spices, boxes, bags, etc.) and how much we need based on our sales forecast.</p>
+<p style="margin:12px 0"><b>How demand is calculated:</b> The hub takes each finished product's forecast, looks up its Bill of Materials (recipe) in Fishbowl, and multiplies. For example, if we forecast selling 1,000 units of "A Sprinkle of Sunshine" and each unit uses 80g of bulk spice, that's 80,000g (80 kg) of bulk demand. This is done for every product and every raw material, then totaled.</p>
+<p style="margin:12px 0"><b>Key columns:</b></p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Monthly columns</span> -- Raw material demand broken down by month, driven by the monthly forecast for each finished product that uses this material.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">TOTAL</span> -- Sum of all monthly demand for the forecast period.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">OH (On Hand)</span> -- Current inventory of this raw material in the warehouse.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Open PO</span> -- Quantity already ordered from suppliers that hasn't arrived yet.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Net Need</span> -- <b>Total demand minus On Hand minus Open PO</b>. If positive (red), we need to order more. If negative (green), we're covered.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">MOS (Months of Supply)</span> -- On Hand divided by average monthly demand. How many months our current stock will last.</p>
+<p style="margin:8px 0"><b>Note on units:</b> All weight-based materials (bulk spices) are converted to kilograms for consistency, regardless of how they're stored in Fishbowl (grams, kg, etc.).</p>
+</div>
+
+<div style="margin-bottom:32px">
+<h3 style="color:var(--accent);font-size:16px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px">3. Case Pack Builder</h3>
+<p><b>Purpose:</b> Manages kits, gift sets, collections, and case packs (bundles of 6 or 8). These are assembled at our warehouse, not by Axia.</p>
+<p style="margin:12px 0"><b>How "Can Build" is calculated:</b> The hub looks at each component in the kit's Bill of Materials, checks how many of each component are available, and divides by how many are needed per kit. The lowest result across all components is the maximum kits you can build. The component that limits you is shown in the "Limiting" column.</p>
+<p style="margin:12px 0"><b>Build for X months:</b> The selector at the top controls how many months of forecast demand to plan for. If set to 3 months, the "Demand" column shows 3 months of expected sales, and "Need" is that demand minus what's already on hand.</p>
+<p style="margin:12px 0"><b>Print Work Order:</b> Select a product (radio button), click Print Work Order. This generates a formatted, printable page with the product info, component list, quantities needed, and sign-off sections. This is the document the warehouse team uses to pick components and build the kits.</p>
+</div>
+
+<div style="margin-bottom:32px">
+<h3 style="color:var(--accent);font-size:16px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px">4. Axia Production</h3>
+<p><b>Purpose:</b> Production planning for our co-packer, Axia. Shows every sellable SKU (excluding kits/gifts/case packs which we build in-house), projected inventory month by month, and what needs to be produced.</p>
+<p style="margin:12px 0"><b>How the projections work:</b> Each SKU shows three rows:</p>
+<p style="margin:4px 0 4px 16px"><span style="font-weight:600">Top row (white numbers)</span> -- Projected ending inventory for each month. This is the running total: <b>last month's ending balance, minus this month's demand, plus any MO receipts scheduled for this month</b>. Red numbers mean we're projected to be out of stock.</p>
+<p style="margin:4px 0 4px 16px"><span style="font-weight:600;color:var(--orange)">Demand row (orange)</span> -- Monthly forecast demand being subtracted each month.</p>
+<p style="margin:4px 0 4px 16px"><span style="font-weight:600;color:var(--green)">MO Receipts row (green)</span> -- Units expected from Manufacturing Orders, placed in the month they're scheduled to complete. These get added to the running total.</p>
+
+<p style="margin:12px 0"><b>Key columns:</b></p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Stockout</span> -- The first month where projected inventory hits zero or below.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Raw Need</span> -- Units needed over the build horizon (selected at top) minus current available minus incoming MO receipts.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">MO Qty</span> -- Raw Need rounded up to the nearest MOQ (Minimum Order Quantity, typically 1,000 units for Axia production runs).</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Can Build</span> -- Whether we have enough raw materials on hand to actually produce the MO Qty. Checks the BOM and finds the most constrained ingredient.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Limiting RM</span> -- The specific raw material that limits production. If "Can Build" says PARTIAL or NO, this tells you what to order first.</p>
+
+<p style="margin:12px 0"><b>Creating Manufacturing Orders:</b> Check the SKUs you want to produce, then click "Create MOs in Fishbowl." The hub connects directly to Fishbowl's API and creates a Manufacturing Order for each selected SKU in "Entered" status. You must then Issue the MO in Fishbowl before sending the production schedule to Axia.</p>
+</div>
+
+<div style="margin-bottom:32px">
+<h3 style="color:var(--accent);font-size:16px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px">5. Manufacturing Orders</h3>
+<p><b>Purpose:</b> Central view of all Manufacturing Orders in Fishbowl. Four sub-sections:</p>
+<p style="margin:12px 0"><b>Open MOs:</b> Every active Manufacturing Order, grouped by MO number. Click a row to expand and see individual line items. The "Products" column shows what's being produced at a glance.</p>
+<p style="margin:12px 0"><b>RM Requirements:</b> A consolidated list of every raw material needed across all open MOs. If MO #3105 needs 4,500 Black Tubes and MO #3128 needs 1,000, this shows the combined 5,500. The "Shortage" column compares what's needed against what's on hand. This is printable -- use it to check if you have everything before starting a production run.</p>
+<p style="margin:12px 0"><b>Production Schedule:</b> The same MO data organized by month, formatted as a clean document for Axia. "Print for Axia" generates a professional production schedule with instructions, line items grouped by month, quantities, and signature lines. This is what you hand to the co-packer.</p>
+<p style="margin:12px 0"><b>Completed:</b> Recently fulfilled Manufacturing Orders for reference. Shows what was ordered vs. what was actually produced.</p>
+</div>
+
+<div style="margin-bottom:32px">
+<h3 style="color:var(--accent);font-size:16px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px">6. Open POs (Purchase Orders)</h3>
+<p><b>Purpose:</b> Shows all open Purchase Orders from Fishbowl, grouped by PO number and vendor. Click a PO to expand and see individual line items.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Items</span> -- Quick preview of what's on the PO without clicking.</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Qty Remaining</span> -- What's still outstanding (ordered minus received).</p>
+<p style="margin:4px 0 4px 16px"><span style="color:var(--accent)">Expected</span> -- The first ship date from Fishbowl.</p>
+</div>
+
+<div style="margin-bottom:32px">
+<h3 style="color:var(--accent);font-size:16px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px">7. BOMs (Bills of Materials)</h3>
+<p><b>Purpose:</b> Reference view of every Bill of Materials in Fishbowl. Shows what raw materials go into each finished product and in what quantity. This is the "recipe book" that powers all the demand calculations. If a BOM is wrong in Fishbowl, the demand numbers here will be wrong too.</p>
+</div>
+
+<div style="margin-bottom:32px">
+<h3 style="color:var(--accent);font-size:16px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px">8. Manage Items</h3>
+<p><b>Purpose:</b> Controls which items appear across all tabs. Some items in Fishbowl are not real sellable products (demo jars, shelf talkers, personalized bundles, labour service items, etc.). Unchecking an item here hides it from every report.</p>
+<p style="margin:8px 0">The "Auto-Exclude Junk" button automatically unchecks common non-product items. Run this once after first setup.</p>
+</div>
+
+<div style="margin-bottom:32px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+<h3 style="color:var(--accent);font-size:16px;margin-bottom:12px">Quick Reference: The Core Formula Chain</h3>
+<p style="margin:8px 0">The entire hub follows one logic chain:</p>
+<p style="margin:8px 0 4px 16px"><b>1.</b> <b>Forecast</b> tells us how much we'll sell</p>
+<p style="margin:4px 0 4px 16px"><b>2.</b> <b>WOH</b> compares that against what we have: Available / Weekly Forecast = Weeks of Supply</p>
+<p style="margin:4px 0 4px 16px"><b>3.</b> <b>Axia Production</b> projects forward month by month: Ending = Prior Ending - Demand + MO Receipts</p>
+<p style="margin:4px 0 4px 16px"><b>4.</b> <b>RM Demand</b> explodes the forecast through BOMs: Forecast x Qty Per BOM = Raw Material Needed</p>
+<p style="margin:4px 0 4px 16px"><b>5.</b> <b>Net Need</b> closes the loop: RM Demand - On Hand - Open POs = What We Need to Order</p>
+<p style="margin:12px 0;color:var(--text-muted)">If a number looks wrong, check: (a) Is the forecast uploaded and accurate? (b) Is the BOM correct in Fishbowl? (c) Is the item excluded in Manage Items? Those three things drive everything.</p>
+</div>
+
+</div></div>
+
+</div></div>
+
+<script>
+// ======== REFERENCE DATA ========
+const AUTO_EXCL=["Demo Jar","Shelf Talker","Signage","Personalized Gift Box Bundle","POP -","Shelf Display","Floor Stand","Easel","Stacker -","Build a Box Test","Build your own","Choose your own","Kanel Cards","Kanel Gift Cards","Kanel holiday sign","Custom Sleeve","DIY Sleeves","Hang Tag","Personalized card","Perfectly Imperfect","NLVA Copacking","Replacement part","Sobeys Stand Up","25.00 CA$","GIF-0008-C","GIF-0028-","Labour -","Labour ","Sapio_Glass Seal","Stacker Seal"];
+const MOQ={"Holiday Cocktail Trio":1000,"The Ultimate Caesar":1000,"Spicy Jalapeno & Lime":1000,"Lemon Blueberry Bombshell":1000,"Salt + chili Margarita":1000,"Gingerbread":1000,"Cranberry Spruce Spritz":1000,"White Chocolate Peppermint":1000,"Sour Cherry":1000,"All the Salts":1000,"Summer Black Truffle Salt":1000,"Holy Grail Garlic Salt":1000,"Quebec Maple Smoked Salt":1000,"Organic Fleur de Sel Rouge":1000,"Charred Lemon Sea Salt":1000,"Cold Smoked Sea Salt":1000,"Summer Sea Salt":1000,"Fiery Sea Salt":1000,"A Sprinkle of Sunshine":1000,"Organic La Vita e Bella":1000,"Organic Cinnamon Toast":1000,"Butcher's Block":1000,"Montreal Bagel Spice":1000,"Organic Green Goddess":1000,"Fresh Salted Peppercorns":1000,"Stockholm Lemon & Dill":1000,"Organic Taco Night":1000,"Hawaiian 'Ono Poke":1000,"Ole Smoky Rub":1000,"Santa Fe Chipotle Honey":1000,"Sweet & Smoky Rub":1000,"For The Love of BBQ":1000,"Bangkok Night Market":1000,"Organic Louisiana Fried Chicken":1000,"Aglio Napoletano":1000,"Organic Spicy Chili Crunch":1000,"Tuscan Affair":1000,"Organic Sunday Roast":1000,"Sweet Korean Heat":1000,"Vadouvan Curry":1000,"Porcini Umami Rub":1000,"Organic Cacao Apple Crisp":1000,"Golden Lemon Turmeric":1000,"Organic Forbidden Tonka Sugar":1000,"Organic Smoked Peppercorns":1000,"Sun Roasted Tomato & Fennel":1000};
+
+// ======== STATE ========
+let S={config:null,data:null,forecast:{},fm:{},mL:[],excluded:{},wohFilter:'all',wohSearch:'',rmQ:'',rmCat:'all',poQ:'',bomQ:'',cpQ:'',axQ:'',
+  sortC:{},sortD:{},axiaBM:3,cpBM:1,cpSel:null,axSel:{},moQ:'',_c:{}};
+
+// ======== UTILS ========
+function fmt(n,d=0){if(n===null||n===undefined||isNaN(n))return'--';return Number(n).toLocaleString('en-CA',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtDate(s){if(!s)return'--';const d=new Date(s);if(isNaN(d))return'--';return d.toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'});}
+function bdg(s){const m={oos:'badge-oos">OOS',critical:'badge-critical">CRITICAL',atrisk:'badge-atrisk">AT RISK',healthy:'badge-healthy">HEALTHY',excess:'badge-excess">EXCESS'};return m[s]?`<span class="badge ${m[s]}</span>`:'<span class="badge" style="opacity:.4">--</span>';}
+function sLbl(s){return{oos:'OOS',critical:'CRITICAL',atrisk:'AT RISK',healthy:'HEALTHY',excess:'EXCESS'}[s]||'';}
+function bClr(s){return{oos:'var(--gray)',critical:'var(--red)',atrisk:'var(--orange)',healthy:'var(--blue)',excess:'var(--green)'}[s]||'var(--gray)';}
+function toKg(q,u){const l=(u||'').toLowerCase();if(l==='gram'||l==='g')return q/1000;if(l==='kilogram'||l==='kg')return q;if(l==='454g bag')return q*0.454;if(l==='5kg bag')return q*5;return q;}
+function isWt(u){return['gram','g','kilogram','kg','454g bag','5kg bag'].includes((u||'').toLowerCase());}
+function dU(u){return isWt(u)?'kg':u;}
+function inc(n){return!S.excluded[n];}
+function getCat(n){
+  const l=n.toLowerCase();
+  if(l.includes('rimmer')||l.includes('caesar')&&!l.includes('bulk')&&!l.includes('label')&&!l.includes('tin')||l.includes('margarita')&&!l.includes('bulk')&&!l.includes('label')&&!l.includes('tin')||l.includes('bombshell')&&!l.includes('bulk')||l.includes('spritz')&&!l.includes('bulk')||l.includes('gingerbread')&&!l.includes('bulk')||l.includes('peppermint')&&!l.includes('bulk')||l.includes('sour cherry')&&!l.includes('bulk')||l.includes('holiday cocktail'))return'Cocktail Rimmer';
+  if(l.includes('refill bag'))return'Refill';if(l.includes('case pack'))return'Case Pack';
+  if(l.includes('collection')||l.includes('duo')&&!l.includes('sleeve')||l.includes('trio')||l.includes('gift')||l.includes('bonjour')||l.includes('traveler')||l.includes('edit ')&&!l.includes('salt')||l.includes('bright &')||l.includes('bring the'))return'Gift';
+  if(l.includes(' salt')||l.includes('fleur de sel')||l.includes('pearl')||l.includes('flake salt')||l.includes('peppercorn')&&!l.includes('bulk'))return'Sea Salt';
+  return'Spice Blend';
+}
+function catRM(n){
+  const l=n.toLowerCase();if(l.startsWith('bulk'))return'Bulk Ingredients';if(l.startsWith('label')||l.includes('round label'))return'Labels';
+  if(l.includes('tube'))return'Tubes';if(l.includes('bag')||l.includes('pouch')||l.includes('compostable'))return'Bags & Pouches';
+  if(l.startsWith('box')||l.includes('insert')||l.includes('sleeve'))return'Boxes & Inserts';if(l.includes('jar')||l.includes('lid')||l.includes('glass'))return'Jars & Lids';
+  if(l.includes('tin')||l.startsWith('rm-rimmer'))return'Tins';if(l.includes('case pack'))return'Case Pack Boxes';return'Other Components';
+}
+
+// ======== NAV / SORT ========
+function switchTab(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden'));document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));document.getElementById('tab-'+t).classList.remove('hidden');document.querySelector(`.nav-tab[data-tab="${t}"]`).classList.add('active');if(t==='manage')rManage();if(t==='mos')rMO();}
+function switchMOSub(s){document.querySelectorAll('#tab-mos .sub-tab').forEach(e=>e.classList.remove('active'));document.querySelector(`.sub-tab[data-sub="${s}"]`).classList.add('active');['open','rmreq','schedule','closed'].forEach(id=>{document.getElementById('mo-'+id).classList.toggle('hidden',id!==s);});}
+function srt(tab,col){if(S.sortC[tab]===col)S.sortD[tab]=S.sortD[tab]==='a'?'d':'a';else{S.sortC[tab]=col;S.sortD[tab]='a';}const dir=S.sortD[tab]==='a'?1:-1;const d=S._c[tab+'F']||[];d.sort((a,b)=>{let va=a[col],vb=b[col];if(va==null)return 1;if(vb==null)return-1;if(typeof va==='string')return va.localeCompare(vb)*dir;return(va-vb)*dir;});const rn={woh:rWOHT,rmdemand:rRMDT,casepack:rCPT,axia:rAXT,boms:rBOMT,pos:rPOT,morm:rMORM_T};if(rn[tab])rn[tab](d);}
+
+// ======== HELPERS: MO receipt lookup ========
+function getMOReceipts(){
+  // Build lookup: partName -> [{moNum, qty, dateScheduled, month}]
+  const outs=S.data.open_mo_outputs||[];
+  const ml=S.mL||[];
+  const lookup={};
+  outs.forEach(o=>{
+    const k=o.part_number;if(!lookup[k])lookup[k]=[];
+    // Determine which month this receipt lands in
+    let mi=-1;
+    if(o.date_scheduled&&ml.length>0){
+      const ds=new Date(fixTZ(o.date_scheduled));
+      for(let i=0;i<ml.length;i++){
+        // Parse month label like "Feb 2026"
+        const md=new Date(ml[i]+' 1');
+        if(md.getFullYear()===ds.getFullYear()&&md.getMonth()===ds.getMonth()){mi=i;break;}
+      }
+      if(mi===-1&&ds>new Date()){mi=0;} // If before first month, put in first
+    }
+    lookup[k].push({moNum:o.mo_num,qty:o.qty_to_fulfill||0,fulfilled:o.qty_fulfilled||0,dateSched:o.date_scheduled,monthIdx:mi});
+  });
+  return lookup;
+}
+
+// ======== FORECAST ========
+function showFU(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='.xlsx,.xls,.csv';
+  inp.onchange=async(e)=>{
+    const file=e.target.files[0];if(!file)return;
+    if(!window.XLSX){const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';document.head.appendChild(s);await new Promise(r=>s.onload=r);}
+    const data=await file.arrayBuffer();const wb=XLSX.read(data);const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+    const annual={},monthly={},ml=[];let hdr=-1;
+    for(let i=0;i<Math.min(10,rows.length);i++){if(rows[i]&&rows[i].length>8){let mc=0;for(let c=5;c<rows[i].length;c++){if(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i.test(String(rows[i][c]||'')))mc++;}if(mc>=2){hdr=i;break;}}}
+    if(hdr>=0){
+      for(let c=6;c<=18&&c<rows[hdr].length;c++){const l=String(rows[hdr][c]).trim();if(l&&/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i.test(l))ml.push(l);}
+      const inv=(S.data&&S.data.inventory)||[];const pn=inv.map(i=>i.part_number);
+      let matched=0,total=0;
+      const corr={"Bonjour, Hi.":"Bonjour, Hi","Spice Traveler":"Spice traveler","epices a Rosbif":"epices a rosbif"};
+      let nameCol=0,dataStart=hdr+1;
+      for(let i=hdr+1;i<Math.min(hdr+8,rows.length);i++){const r=rows[i];if(!r)continue;const c0=String(r[0]||'').trim().toLowerCase();if(!c0||c0==='fct'||c0==='category'||c0==='month')continue;if(r[3]&&String(r[3]).trim().length>2){nameCol=3;}dataStart=i;break;}
+      for(let i=dataStart;i<rows.length;i++){
+        const r=rows[i];if(!r)continue;let name=String(r[nameCol]||'').trim();if(!name||name==='None'||name.toLowerCase()==='category')continue;total++;
+        let mn=pn.find(p=>p===name)||pn.find(p=>p.toLowerCase()===name.toLowerCase())||pn.find(p=>p.replace(/\s+/g,' ').toLowerCase()===name.replace(/\s+/g,' ').toLowerCase());
+        if(!mn&&corr[name])mn=pn.find(p=>p===corr[name]);
+        const key=mn||name;let yr=0;const mo=[];
+        for(let c=6;c<=18&&c<r.length;c++){const v=parseFloat(r[c])||0;yr+=v;mo.push(v);}
+        if(yr>0){annual[key]=(annual[key]||0)+yr;monthly[key]=(monthly[key]||[]).length?monthly[key].map((v,i)=>v+(mo[i]||0)):mo;if(mn)matched++;}
+      }
+      S.mL=ml;alert(`Forecast loaded: ${matched}/${total} SKUs matched, ${ml.length} months (${ml[0]} to ${ml[ml.length-1]})`);
+    }
+    S.forecast=annual;S.fm=monthly;
+    localStorage.setItem('kh-fc',JSON.stringify(annual));localStorage.setItem('kh-fm',JSON.stringify(monthly));localStorage.setItem('kh-ml',JSON.stringify(ml));
+    renderAll();
+  };inp.click();
+}
+
+// ======== WOH (FG only, with Replenishment Date from open MOs) ========
+function fixTZ(s){if(!s)return null;if(/[+-]\d{2}$/.test(s))return s+':00';return s;}
+function calcWOH(){
+  const inv=(S.data.inventory||[]).filter(i=>i.item_class==='FG'&&inc(i.part_number));
+  const moR=getMOReceipts();
+  return inv.map(item=>{
+    const fc=S.forecast[item.part_number];const wf=fc?fc/52:null;
+    const av=item.available_qty!==undefined?item.available_qty:item.on_hand_qty;
+    let woh=null,doh=null,moh=null,st='nf';
+    if(wf&&wf>0){woh=av/wf;doh=Math.round(woh*7);moh=Math.round(woh/4.33*10)/10;
+      if(av===0)st='oos';else if(woh<4)st='critical';else if(woh<8)st='atrisk';else if(woh<=20)st='healthy';else st='excess';
+    }else if(av===0){st='oos';woh=0;doh=0;moh=0;}
+    // Stockout date = today + DOH days
+    let stockoutDate=null;
+    if(doh!==null&&doh>0&&st!=='excess'){const sd=new Date();sd.setDate(sd.getDate()+doh);stockoutDate=sd;}
+    // Replenishment date = earliest open MO scheduled date for this part
+    const receipts=moR[item.part_number]||[];
+    let replen=null,replenQty=0,replenFlag=null;
+    if(receipts.length>0){
+      const earliest=receipts.sort((a,b)=>new Date(fixTZ(a.dateSched))-new Date(fixTZ(b.dateSched)))[0];
+      replen=earliest.dateSched;replenQty=receipts.reduce((s,r)=>s+r.qty,0);
+      if(stockoutDate&&replen){const rd=new Date(fixTZ(replen));replenFlag=rd<=stockoutDate?'on-time':'late';}
+      else if(replen)replenFlag='on-time';
+    }else if(st==='oos'||st==='critical'||st==='atrisk'){replenFlag='none';}
+    return{pn:item.part_number,cat:getCat(item.part_number),oh:item.on_hand_qty,cm:item.committed_qty||0,av,wf,doh,woh,moh,st,replen,replenQty,replenFlag,stockoutDate};
+  });
+}
+function rWOH(){
+  const d=calcWOH();S._c.woh=d;S._c.wohF=d;
+  const c={oos:0,critical:0,atrisk:0,healthy:0,excess:0};d.forEach(r=>{if(c[r.st]!==undefined)c[r.st]++;});
+  const hf=Object.keys(S.forecast).length>0;
+  document.getElementById('wohCards').innerHTML=`
+    <div class="card"><div class="card-label">FG SKUs</div><div class="card-value">${d.length}</div></div>
+    <div class="card"><div class="card-label">Out of Stock</div><div class="card-value gray">${c.oos}</div></div>
+    <div class="card"><div class="card-label">Critical</div><div class="card-value red">${c.critical}</div></div>
+    <div class="card"><div class="card-label">At Risk</div><div class="card-value orange">${c.atrisk}</div></div>
+    <div class="card"><div class="card-label">Healthy</div><div class="card-value blue">${c.healthy}</div></div>
+    <div class="card"><div class="card-label">Excess</div><div class="card-value green">${c.excess}</div></div>`;
+  document.getElementById('wohFilters').innerHTML=`
+    <button class="filter-btn ${S.wohFilter==='all'?'active':''}" onclick="S.wohFilter='all';rWOHT()">All<span class="count">${d.length}</span></button>
+    <button class="filter-btn ${S.wohFilter==='oos'?'active':''}" onclick="S.wohFilter='oos';rWOHT()">OOS<span class="count">${c.oos}</span><span class="tip">0 units available</span></button>
+    <button class="filter-btn ${S.wohFilter==='critical'?'active':''}" onclick="S.wohFilter='critical';rWOHT()">Critical<span class="count">${c.critical}</span><span class="tip">Under 4 weeks</span></button>
+    <button class="filter-btn ${S.wohFilter==='atrisk'?'active':''}" onclick="S.wohFilter='atrisk';rWOHT()">At Risk<span class="count">${c.atrisk}</span><span class="tip">4 to 8 weeks</span></button>
+    <button class="filter-btn ${S.wohFilter==='healthy'?'active':''}" onclick="S.wohFilter='healthy';rWOHT()">Healthy<span class="count">${c.healthy}</span><span class="tip">8 to 20 weeks</span></button>
+    <button class="filter-btn ${S.wohFilter==='excess'?'active':''}" onclick="S.wohFilter='excess';rWOHT()">Excess<span class="count">${c.excess}</span><span class="tip">Over 20 weeks</span></button>
+    <input type="text" class="search-input" placeholder="Search..." oninput="S.wohSearch=this.value;rWOHT()" value="${S.wohSearch}">
+    ${!hf?'<button class="filter-btn" style="border-color:var(--accent);color:var(--accent)" onclick="showFU()">+ Upload Forecast</button>':'<button class="filter-btn" onclick="showFU()">Update Forecast</button>'}`;
+  rWOHT();
+}
+function rWOHT(d){
+  if(!d){d=S._c.woh||[];if(S.wohFilter!=='all')d=d.filter(r=>r.st===S.wohFilter);if(S.wohSearch){const q=S.wohSearch.toLowerCase();d=d.filter(r=>r.pn.toLowerCase().includes(q));}}
+  S._c.wohF=d;document.getElementById('wohCount').textContent=`${d.length} items`;
+  document.getElementById('wohBody').innerHTML=d.map(r=>{const bw=r.woh!==null?Math.min(100,r.woh/30*100):0;
+    const repTxt=r.replen?`<span style="color:var(--green)">${fmtDate(fixTZ(r.replen))}</span><br><span style="font-size:10px;color:var(--text-muted)">${fmt(r.replenQty)} units</span>`:'<span style="color:var(--text-muted)">None</span>';
+    const flagMap={'on-time':'<span class="badge badge-healthy">ON TIME</span>','late':'<span class="badge badge-critical">LATE</span>','none':'<span class="badge badge-oos">NO MO</span>'};
+    const flagTxt=flagMap[r.replenFlag]||'<span style="color:var(--text-muted)">--</span>';
+    return`<tr><td>${r.pn}</td><td style="font-size:12px;color:var(--text-muted)">${r.cat}</td>
+    <td class="num">${fmt(r.oh)}</td><td class="num" style="color:${r.cm>0?'var(--orange)':'var(--text-muted)'}">${fmt(r.cm)}</td>
+    <td class="num" style="font-weight:600">${fmt(r.av)}</td><td class="num">${r.wf!==null?fmt(r.wf,1):'--'}</td>
+    <td class="num" style="color:var(--text-muted)">${r.doh!==null?fmt(r.doh):'--'}</td>
+    <td class="num" style="font-weight:600">${r.woh!==null?fmt(r.woh,1):'--'}</td>
+    <td class="num" style="color:var(--text-muted)">${r.moh!==null?fmt(r.moh,1):'--'}</td>
+    <td class="bar-cell"><div class="woh-bar"><div class="woh-bar-fill" style="width:${bw}%;background:${bClr(r.st)}"></div></div></td>
+    <td style="font-size:12px;white-space:normal;line-height:1.3">${repTxt}</td>
+    <td>${flagTxt}</td>
+    <td>${bdg(r.st)}</td></tr>`;}).join('');
+}
+
+// ======== RM DEMAND ========
+function calcRMD(){
+  const boms=S.data.boms||[],inv=S.data.inventory||[],fc=S.forecast||{},fm=S.fm||{},pos=S.data.open_pos||[],ml=S.mL||[];
+  const iL={};inv.forEach(i=>{iL[i.part_number]={oh:i.on_hand_qty||0,av:i.available_qty!==undefined?i.available_qty:i.on_hand_qty||0};});
+  const pL={};pos.forEach(p=>{pL[p.part]=(pL[p.part]||0)+(p.qty_remaining||0);});
+  const rm={};
+  boms.forEach(b=>{
+    const ff=fc[b.finished_good];if(!ff||ff<=0)return;if(!inc(b.component))return;
+    if(b.component.toLowerCase().includes('labour'))return;
+    const k=b.component,w=isWt(b.uom),qn=w?toKg(b.qty_per,b.uom):b.qty_per,u=dU(b.uom);
+    if(!rm[k])rm[k]={cp:k,uom:u,annual:0,ui:new Set(),mo:ml.map(()=>0),rmCat:catRM(k)};
+    rm[k].annual+=qn*ff;rm[k].ui.add(b.finished_good);
+    const fgm=fm[b.finished_good];if(fgm)for(let i=0;i<fgm.length&&i<rm[k].mo.length;i++)rm[k].mo[i]+=qn*fgm[i];
+  });
+  return Object.values(rm).map(r=>{
+    const i=iL[r.cp]||{oh:0,av:0};const po=pL[r.cp]||0;const md=r.annual/12;
+    const mos=md>0?i.av/md:999;const net=Math.max(0,r.annual-i.av-po);
+    let st;if(i.av===0&&r.annual>0)st='oos';else if(mos<1)st='critical';else if(mos<3)st='atrisk';else if(mos<=6)st='healthy';else st='excess';
+    return{...r,uic:r.ui.size,oh:i.oh,av:i.av,po,md:Math.round(md*10)/10,mos:Math.round(mos*10)/10,net:Math.round(net),st};
+  }).filter(r=>r.annual>0).sort((a,b)=>a.mos-b.mos);
+}
+function rRMD(){
+  const all=calcRMD();S._c.rmdemand=all;const cats=new Set(all.map(r=>r.rmCat));
+  const sel=document.getElementById('rmCatF');const cur=S.rmCat||'all';
+  sel.innerHTML='<option value="all">All Categories</option>'+[...cats].sort().map(c=>`<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('');
+  let d=all;if(S.rmCat&&S.rmCat!=='all')d=d.filter(r=>r.rmCat===S.rmCat);
+  if(S.rmQ)d=d.filter(r=>r.cp.toLowerCase().includes(S.rmQ.toLowerCase()));
+  S._c.rmdemandF=d;const ml=S.mL||[];
+  const c={oos:0,critical:0,atrisk:0};all.forEach(r=>{if(c[r.st]!==undefined)c[r.st]++;});
+  document.getElementById('rmdemandCards').innerHTML=`
+    <div class="card"><div class="card-label">Materials</div><div class="card-value">${all.length}</div></div>
+    <div class="card"><div class="card-label">Out of Stock</div><div class="card-value gray">${c.oos}</div></div>
+    <div class="card"><div class="card-label">Critical (&lt;1mo)</div><div class="card-value red">${c.critical}</div></div>
+    <div class="card"><div class="card-label">At Risk (1-3mo)</div><div class="card-value orange">${c.atrisk}</div></div>`;
+  document.getElementById('rmdemandHead').innerHTML=`<tr><th onclick="srt('rmdemand','cp')">Material</th><th>Category</th><th>UOM</th>
+    ${ml.map(m=>`<th style="font-size:10px">${m.substring(0,3)}</th>`).join('')}
+    <th onclick="srt('rmdemand','annual')">TOTAL</th><th onclick="srt('rmdemand','oh')">OH</th><th onclick="srt('rmdemand','po')">Open PO</th><th onclick="srt('rmdemand','net')">Net Need</th><th onclick="srt('rmdemand','mos')">MOS</th><th>Status</th></tr>`;
+  rRMDT(d);
+}
+function rRMDT(d){if(!d)d=S._c.rmdemandF||[];document.getElementById('rmdemandCount').textContent=`${d.length} materials`;
+  document.getElementById('rmdemandBody').innerHTML=d.map(r=>`<tr><td>${r.cp}</td><td style="font-size:11px;color:var(--text-muted)">${r.rmCat}</td><td>${r.uom}</td>
+    ${(r.mo||[]).map(v=>`<td class="num" style="font-size:11px">${fmt(Math.round(v))}</td>`).join('')}
+    <td class="num" style="font-weight:600">${fmt(Math.round(r.annual))}</td><td class="num">${fmt(r.oh,1)}</td>
+    <td class="num" style="color:var(--blue)">${fmt(r.po)}</td>
+    <td class="num" style="font-weight:600;color:${r.net>0?'var(--red)':'var(--green)'}">${fmt(r.net)}</td>
+    <td class="num">${r.mos>=999?'--':fmt(r.mos,1)}</td><td>${bdg(r.st)}</td></tr>`).join('');
+}
+
+// ======== CASE PACK BUILDER ========
+function calcCP(){
+  const boms=S.data.boms||[],inv=S.data.inventory||[],fc=S.forecast||{},fm=S.fm||{},ml=S.mL||[];
+  const iL={};inv.forEach(i=>{iL[i.part_number]=i.available_qty!==undefined?i.available_qty:i.on_hand_qty||0;});
+  const ohL={};inv.forEach(i=>{ohL[i.part_number]=i.on_hand_qty||0;});
+  const bomByFG={};boms.forEach(b=>{if(!bomByFG[b.finished_good])bomByFG[b.finished_good]=[];bomByFG[b.finished_good].push(b);});
+  const kit=/case pack|collection|duo|kit|trio|gift box|edit |shaken|holiday spirit|bright|bring|bonjour|bbq duo|smoke & fire|roasted & raw|top 5|sapio|voyager|mineral|spice lover|family fave|best seller|full spice|traveler/i;
+  const results=[];
+  Object.entries(bomByFG).forEach(([fg,comps])=>{
+    if(!kit.test(fg)||!inc(fg))return;
+    const ffc=fc[fg]||0;const fgm=fm[fg]||ml.map(()=>0);const bm=S.cpBM||1;
+    const demand=fgm.slice(0,bm).reduce((s,v)=>s+v,0)||ffc/12*bm;
+    const onHand=ohL[fg]||0;const need=Math.max(0,Math.ceil(demand-onHand));
+    let canBuild=Infinity,limComp='';const compList=[];
+    comps.forEach(c=>{if(c.qty_per<=0)return;if(c.component.toLowerCase().includes('labour'))return;
+      const av=iL[c.component]||0;const poss=Math.floor(av/c.qty_per);
+      compList.push({name:c.component,qtyPer:c.qty_per,available:av,canMake:poss});
+      if(poss<canBuild){canBuild=poss;limComp=c.component;}});
+    if(canBuild===Infinity)canBuild=0;
+    let st;if(need<=0)st='excess';else if(canBuild===0)st='critical';else if(canBuild<need)st='atrisk';else st='healthy';
+    results.push({pn:fg,oh:onHand,demand:Math.round(demand),need,canBuild,limComp,comps:compList,ffc:Math.round(ffc),st,moArr:fgm.map(v=>Math.round(v))});
+  });
+  return results.sort((a,b)=>{const so={critical:0,atrisk:1,healthy:2,excess:3};return(so[a.st]||9)-(so[b.st]||9);});
+}
+function rCP(){const d=calcCP();S._c.casepack=d;S._c.casepackF=d;const ml=S.mL||[];
+  const nb=d.filter(r=>r.need>0).length;const cb0=d.filter(r=>r.canBuild===0&&r.need>0).length;
+  document.getElementById('casepackCards').innerHTML=`<div class="card"><div class="card-label">Kits / Packs</div><div class="card-value">${d.length}</div></div>
+    <div class="card"><div class="card-label">Need to Build</div><div class="card-value orange">${nb}</div></div>
+    <div class="card"><div class="card-label">Cannot Build</div><div class="card-value red">${cb0}</div></div>
+    <div class="card"><div class="card-label">Covered</div><div class="card-value green">${d.length-nb}</div></div>`;
+  document.getElementById('cpFilters').innerHTML=`<input type="text" class="search-input" placeholder="Search kits..." oninput="S.cpQ=this.value;rCPT()">
+    <label style="color:var(--text-muted);font-size:13px;margin-left:12px">Build for <select class="hs" onchange="S.cpBM=parseInt(this.value);rCP()">${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${n===S.cpBM?'selected':''}>${n} mo</option>`).join('')}</select></label>`;
+  document.getElementById('cpHead').innerHTML=`<tr><th onclick="srt('casepack','pn')">Product</th><th onclick="srt('casepack','oh')">On Hand</th><th onclick="srt('casepack','demand')">Demand</th><th onclick="srt('casepack','need')">Need</th><th onclick="srt('casepack','canBuild')">Can Build</th><th>Limiting</th><th onclick="srt('casepack','st')">Status</th><th style="width:40px">Select</th></tr>`;
+  rCPT();
+}
+function rCPT(d){if(!d){d=S._c.casepack||[];if(S.cpQ)d=d.filter(r=>r.pn.toLowerCase().includes(S.cpQ.toLowerCase()));}
+  S._c.casepackF=d;document.getElementById('casepackCount').textContent=`${d.length} kits`;
+  document.getElementById('cpBody').innerHTML=d.map(r=>{const sel=S.cpSel===r.pn;
+    const stCol=r.need<=0?'var(--green)':r.canBuild>=r.need?'var(--blue)':r.canBuild===0?'var(--red)':'var(--orange)';
+    const stTxt=r.need<=0?'OK':r.canBuild>=r.need?`BUILD ${r.need}`:`SHORT ${r.need-r.canBuild}`;
+    return`<tr style="${sel?'background:var(--accent-dim)':''}"><td>${r.pn}</td><td class="num">${fmt(r.oh)}</td><td class="num">${fmt(r.demand)}</td>
+    <td class="num" style="font-weight:600;color:${r.need>0?'var(--accent)':'var(--text-muted)'}">${fmt(r.need)}</td>
+    <td class="num" style="color:${r.canBuild===0?'var(--red)':'var(--blue)'}">${fmt(r.canBuild)}</td>
+    <td style="font-size:12px;color:var(--text-muted)">${r.limComp}</td>
+    <td><span style="font-size:12px;font-weight:600;color:${stCol}">${stTxt}</span></td>
+    <td><input type="radio" name="cpsel" ${sel?'checked':''} onchange="S.cpSel='${r.pn.replace(/'/g,"\\'")}'"></td></tr>`;}).join('');
+}
+function printWO(){
+  const sel=S.cpSel;if(!sel){alert('Select a product first');return;}
+  const kit=(S._c.casepack||[]).find(r=>r.pn===sel);if(!kit)return;
+  const today=new Date().toLocaleDateString('en-CA');
+  let h=`<html><head><title>Build Work Order</title><style>body{font-family:Arial,sans-serif;font-size:12px;padding:20px}table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid #ccc;padding:6px 10px;text-align:left}th{background:#f0f0f0}.num{text-align:right}h1{font-size:18px;margin:0}h2{font-size:14px;margin:16px 0 4px;border-bottom:1px solid #000}</style></head><body>`;
+  h+=`<h1>KANEL INC.</h1><h1>BUILD WORK ORDER</h1><br><table style="border:none;width:auto"><tr><td style="border:none"><b>Work Order #:</b></td><td style="border:none;border-bottom:1px solid #000;width:150px"></td><td style="border:none;padding-left:40px"><b>Date:</b></td><td style="border:none">${today}</td></tr></table>`;
+  h+=`<h2>PRODUCT INFO</h2><table><tr><td><b>Product:</b></td><td>${sel}</td></tr></table>`;
+  h+=`<h2>BUILD QUANTITY</h2><table><tr><th>On Hand</th><th>Need to Build</th><th>Actually Built</th><th>Difference</th></tr><tr><td class="num">${kit.oh}</td><td class="num">${kit.need}</td><td></td><td></td></tr></table>`;
+  h+=`<h2>COMPONENTS</h2><table><tr><th>Component</th><th>Qty Each</th><th>Total Needed (x${kit.need})</th><th>Available</th><th>Picked &#9744;</th></tr>`;
+  (kit.comps||[]).forEach(c=>{h+=`<tr><td>${c.name}</td><td class="num">${c.qtyPer}</td><td class="num">${Math.ceil(c.qtyPer*kit.need)}</td><td class="num">${c.available}</td><td></td></tr>`;});
+  h+=`</table><h2>FISHBOWL CONFIRMATION</h2><table style="border:none"><tr><td style="border:none"><b>Completed in Fishbowl:</b></td><td style="border:none">&#9744; YES</td><td style="border:none;padding-left:40px"><b>Transaction #:</b></td><td style="border:none;border-bottom:1px solid #000;width:150px"></td></tr></table>`;
+  h+=`<h2>SIGN-OFF</h2><table><tr><th>Role</th><th>Name</th><th>Initials</th><th>Date</th></tr><tr><td>Built by:</td><td></td><td></td><td></td></tr><tr><td>Checked:</td><td></td><td></td><td></td></tr><tr><td>Fishbowl:</td><td></td><td></td><td></td></tr></table>`;
+  h+=`<h2>NOTES</h2><div style="border:1px solid #ccc;height:60px"></div></body></html>`;
+  const w=window.open('','_blank');w.document.write(h);w.document.close();w.print();
+}
+
+// ======== AXIA PRODUCTION (with MO receipts, running totals, checkboxes) ========
+function calcAX(){
+  const boms=S.data.boms||[],inv=S.data.inventory||[],fc=S.forecast||{},fm=S.fm||{},ml=S.mL||[];
+  const iL={};inv.forEach(i=>{iL[i.part_number]={oh:i.on_hand_qty||0,av:i.available_qty!==undefined?i.available_qty:i.on_hand_qty||0};});
+  const bomByFG={};boms.forEach(b=>{if(!bomByFG[b.finished_good])bomByFG[b.finished_good]=[];bomByFG[b.finished_good].push(b);});
+  const moR=getMOReceipts();
+  // Identify Axia-produced SKUs: has BOM with a Bulk or Label component (produced at copacker)
+  // Include ALL FG with forecast, not just Axia-style
+  const results=[];
+  const allFG=new Set();inv.forEach(i=>{if(i.item_class==='FG'&&inc(i.part_number))allFG.add(i.part_number);});
+  // Also include FG that have BOMs but might not have inventory yet
+  Object.keys(bomByFG).forEach(fg=>{if(inc(fg))allFG.add(fg);});
+
+  allFG.forEach(fg=>{
+    let ffc=fc[fg]||0;
+    // Skip case packs and kits - they're in case pack builder
+    const cat=getCat(fg);
+    if(cat==='Case Pack'||cat==='Gift')return;
+    if(/case pack/i.test(fg))return;
+    // Add case pack demand (when this FG is a component of a case pack)
+    let totalAnnual=ffc;
+    Object.entries(bomByFG).forEach(([cpFG,cpC])=>{
+      if(!cpFG.includes('Case Pack'))return;const cpF=fc[cpFG]||0;if(cpF<=0)return;
+      cpC.forEach(c=>{if(c.component===fg)totalAnnual+=c.qty_per*cpF;});
+    });
+    if(totalAnnual<=0)return;
+    const fgm=fm[fg]||[];
+    const moArr=ml.map((m,i)=>Math.round(fgm[i]||totalAnnual/12));
+    const i=iL[fg]||{oh:0,av:0};
+    // MO receipts by month
+    const receipts=moR[fg]||[];
+    const rcptByMonth=ml.map(()=>0);
+    receipts.forEach(r=>{if(r.monthIdx>=0&&r.monthIdx<rcptByMonth.length)rcptByMonth[r.monthIdx]+=r.qty;});
+    // Running projection: Ending = Prior Ending - Demand + Receipts
+    const proj=[];const rcptRow=[];let running=i.av;
+    for(let x=0;x<ml.length;x++){
+      running=running-moArr[x]+rcptByMonth[x];
+      proj.push(Math.round(running));
+      rcptRow.push(rcptByMonth[x]);
+    }
+    // Stockout month
+    let soM='--';for(let x=0;x<proj.length;x++){if(proj[x]<=0){soM=ml[x]?ml[x].substring(0,3):'M'+(x+1);break;}}
+    const wkD=totalAnnual/52;const woh=wkD>0?i.av/wkD:999;
+    // Suggested qty
+    const bm=S.axiaBM||3;const demPeriod=moArr.slice(0,bm).reduce((s,v)=>s+v,0);
+    const rcptPeriod=rcptByMonth.slice(0,bm).reduce((s,v)=>s+v,0);
+    const rawNeed=Math.max(0,demPeriod-i.av-rcptPeriod);
+    const moq=MOQ[fg]||1000;const moqQty=rawNeed>0?Math.ceil(rawNeed/moq)*moq:0;
+    let st;if(i.av===0)st='oos';else if(woh<4)st='critical';else if(woh<8)st='atrisk';else if(woh<=16)st='healthy';else st='excess';
+    // Can we build? Check RM availability from BOM
+    const bomComps=bomByFG[fg]||[];
+    let canBuild=Infinity,limRM='';
+    bomComps.forEach(c=>{if(c.qty_per<=0||c.component.toLowerCase().includes('labour'))return;
+      const rmAv=(iL[c.component]||{av:0}).av;const qp=isWt(c.uom)?toKg(c.qty_per,c.uom)*1000:c.qty_per;
+      const rmAvAdj=isWt(c.uom)?toKg(rmAv,c.uom)*1000:rmAv;
+      const poss=c.qty_per>0?Math.floor(rmAv/c.qty_per):0;
+      if(poss<canBuild){canBuild=poss;limRM=c.component;}});
+    if(canBuild===Infinity)canBuild=0;
+    let buildSt;if(moqQty<=0)buildSt='ok';else if(canBuild>=moqQty)buildSt='yes';else if(canBuild>0)buildSt='partial';else buildSt='no';
+    results.push({pn:fg,cat,oh:i.oh,av:i.av,annual:Math.round(totalAnnual),wkD:Math.round(wkD*10)/10,
+      woh:Math.round(woh*10)/10,soM,rawNeed:Math.round(rawNeed),moqQty,moq,moArr,proj,rcptRow,st,
+      hasReceipts:rcptByMonth.some(v=>v>0),canBuild,limRM,buildSt,demArr:moArr});
+  });
+  return results.sort((a,b)=>a.woh-b.woh);
+}
+function rAX(){
+  const d=calcAX();S._c.axia=d;S._c.axiaF=d;const ml=S.mL||[];
+  const c={oos:0,critical:0,atrisk:0,healthy:0,excess:0};d.forEach(r=>{if(c[r.st]!==undefined)c[r.st]++;});
+  const tot=d.reduce((s,r)=>s+r.moqQty,0);
+  document.getElementById('axiaCards').innerHTML=`
+    <div class="card"><div class="card-label">Sellable SKUs</div><div class="card-value">${d.length}</div></div>
+    <div class="card"><div class="card-label">Need Production</div><div class="card-value red">${c.oos+c.critical+c.atrisk}</div></div>
+    <div class="card"><div class="card-label">Healthy</div><div class="card-value blue">${c.healthy}</div></div>
+    <div class="card"><div class="card-label">Suggested MO Units</div><div class="card-value">${fmt(tot)}</div></div>`;
+  document.getElementById('axiaFilters').innerHTML=`
+    <input type="text" class="search-input" placeholder="Search SKUs..." oninput="S.axQ=this.value;rAXT()">
+    <label style="color:var(--text-muted);font-size:13px;margin-left:12px">Build horizon <select class="hs" onchange="S.axiaBM=parseInt(this.value);rAX()">${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${n===S.axiaBM?'selected':''}>${n} mo</option>`).join('')}</select></label>
+    <button class="filter-btn" style="margin-left:12px" onclick="selectAllAxia()">Select All Needing Production</button>`;
+  document.getElementById('axiaHead').innerHTML=`<tr>
+    <th style="width:40px">Sel</th><th onclick="srt('axia','pn')">SKU</th><th onclick="srt('axia','cat')">Category</th><th onclick="srt('axia','av')">Avail</th><th onclick="srt('axia','woh')">WOH</th><th onclick="srt('axia','soM')">Stockout</th>
+    ${ml.map(m=>`<th style="font-size:10px">${m.substring(0,3)}</th>`).join('')}
+    <th onclick="srt('axia','rawNeed')">Raw Need</th><th onclick="srt('axia','moqQty')">MO Qty</th><th>MOQ</th><th onclick="srt('axia','canBuild')">Can Build</th><th>Limiting RM</th><th onclick="srt('axia','st')">Status</th></tr>`;
+  rAXT();updateAxSel();
+}
+function rAXT(d){
+  if(!d){d=S._c.axia||[];if(S.axQ)d=d.filter(r=>r.pn.toLowerCase().includes(S.axQ.toLowerCase()));}
+  S._c.axiaF=d;document.getElementById('axiaCount').textContent=`${d.length} SKUs`;
+  const ml=S.mL||[];
+  let html='';
+  d.forEach(r=>{
+    const sel=S.axSel[r.pn];
+    const buildClr={'yes':'var(--green)','partial':'var(--orange)','no':'var(--red)','ok':'var(--text-muted)'}[r.buildSt]||'var(--text-muted)';
+    const buildTxt={'yes':'YES','partial':'PARTIAL','no':'NO','ok':'--'}[r.buildSt]||'--';
+    // Main row: projected ending inventory
+    html+=`<tr><td><input type="checkbox" ${sel?'checked':''} onchange="toggleAxSel('${r.pn.replace(/'/g,"\\'")}',this.checked)"></td>
+      <td>${r.pn}</td><td style="font-size:11px;color:var(--text-muted)">${r.cat}</td>
+      <td class="num">${fmt(r.av)}</td><td class="num" style="font-weight:600">${r.woh>=999?'--':fmt(r.woh,1)}</td>
+      <td style="color:${r.soM!=='--'?'var(--red)':'var(--text-muted)'}">${r.soM}</td>
+      ${(r.proj||[]).map(v=>`<td class="num" style="font-size:11px;color:${v<=0?'var(--red)':v<500?'var(--orange)':'var(--text-muted)'}">${fmt(v)}</td>`).join('')}
+      <td class="num">${fmt(r.rawNeed)}</td>
+      <td class="num" style="font-weight:600;color:${r.moqQty>0?'var(--accent)':'var(--text-muted)'}">${fmt(r.moqQty)}</td>
+      <td class="num" style="font-size:11px;color:var(--text-muted)">${fmt(r.moq)}</td>
+      <td style="font-weight:600;color:${buildClr}">${buildTxt}</td>
+      <td style="font-size:11px;color:var(--text-muted);max-width:150px;overflow:hidden;text-overflow:ellipsis" title="${r.limRM}">${r.limRM||'--'}</td>
+      <td>${bdg(r.st)}</td></tr>`;
+    // Demand row (monthly forecast demand)
+    html+=`<tr class="receipt-row" style="color:var(--orange)"><td></td><td colspan="2" style="font-size:11px;color:var(--orange)">- Demand</td><td></td><td></td><td></td>
+      ${(r.demArr||[]).map(v=>`<td class="num" style="font-size:11px;color:var(--orange)">${v>0?'-'+fmt(v):''}</td>`).join('')}
+      <td colspan="5"></td></tr>`;
+    // Receipt row (if any MO receipts exist for this SKU)
+    if(r.hasReceipts){
+      html+=`<tr class="receipt-row"><td></td><td colspan="2" style="font-size:11px;color:var(--green)">+ MO Receipts</td><td></td><td></td><td></td>
+        ${(r.rcptRow||[]).map(v=>`<td class="num" style="font-size:11px;color:var(--green)">${v>0?'+'+fmt(v):''}</td>`).join('')}
+        <td colspan="5"></td></tr>`;
+    }
+  });
+  document.getElementById('axiaBody').innerHTML=html;
+}
+function toggleAxSel(pn,checked){if(checked)S.axSel[pn]=true;else delete S.axSel[pn];updateAxSel();}
+function selectAllAxia(){const d=S._c.axia||[];d.forEach(r=>{if(r.moqQty>0)S.axSel[r.pn]=true;});rAXT();updateAxSel();}
+function updateAxSel(){
+  const cnt=Object.keys(S.axSel).length;
+  const bar=document.getElementById('axiaCreateBar');
+  if(cnt>0){bar.classList.remove('hidden');document.getElementById('axiaSelCount').textContent=`${cnt} SKU${cnt>1?'s':''} selected`;}
+  else bar.classList.add('hidden');
+}
+async function generateMOImport(){
+  const sel=Object.keys(S.axSel);if(sel.length===0)return;
+  const items=(S._c.axia||[]).filter(r=>sel.includes(r.pn)&&r.moqQty>0);
+  if(items.length===0){alert('No items need production.');return;}
+  // Build BOM ID map
+  const bomMap={};(S.data.bom_ids||[]).forEach(b=>{bomMap[b.name]=b.id;});
+  // Check all have BOM IDs
+  const missing=items.filter(r=>!bomMap[r.pn]);
+  if(missing.length>0){alert(`Cannot create MOs - no BOM found for:\n${missing.map(r=>r.pn).join('\n')}\n\nCheck Fishbowl BOM names match exactly.`);return;}
+  const totalUnits=items.reduce((s,r)=>s+r.moqQty,0);
+  const conf=confirm(`CREATE ${items.length} MANUFACTURING ORDERS IN FISHBOWL\n\nTotal units: ${fmt(totalUnits)}\n\nThese MOs will be created in ENTERED status.\nIf approved for production at Axia, be sure to ISSUE these orders in Fishbowl before sending to the co-packer.\n\nProceed?`);
+  if(!conf)return;
+  const schedDate=new Date();schedDate.setMonth(schedDate.getMonth()+1);
+  const sd=schedDate.toISOString();
+  let created=0,failed=0,errors=[];
+  for(const r of items){
+    try{
+      const resp=await fetch(`${S.config.url}/api/create-mo`,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({bomId:bomMap[r.pn],bomName:r.pn,quantity:r.moqQty,dateScheduled:sd,note:'Created by Kanel Hub'})});
+      const data=await resp.json();
+      if(data.number){created++;console.log(`MO #${data.number} created for ${r.pn} x ${r.moqQty}`);}
+      else{failed++;errors.push(`${r.pn}: ${data.message||'Unknown error'}`);}
+    }catch(e){failed++;errors.push(`${r.pn}: ${e.message}`);}
+  }
+  let msg=`Created ${created} MOs in Fishbowl (Entered status).`;
+  if(failed>0)msg+=`\n\n${failed} failed:\n${errors.join('\n')}`;
+  msg+='\n\nRefreshing data...';
+  alert(msg);S.axSel={};refreshData();
+}
+
+// ======== OPEN POs ========
+function rPO(){
+  const pos=S.data.open_pos||[];const groups={};
+  pos.forEach(p=>{const k=p.po_num;if(!groups[k])groups[k]={po:k,vendor:p.vendor,status:p.status,items:[],totalQty:0};
+    groups[k].items.push(p);groups[k].totalQty+=p.qty_remaining||0;
+    p._date=p.expected_date?fmtDate(fixTZ(p.expected_date)):'--';});
+  let gArr=Object.values(groups);
+  if(S.poQ){const q=S.poQ.toLowerCase();gArr=gArr.filter(g=>g.items.some(p=>(g.po+g.vendor+p.part).toLowerCase().includes(q)));}
+  S._c.posF=gArr;
+  document.getElementById('poCards').innerHTML=`<div class="card"><div class="card-label">Open POs</div><div class="card-value">${Object.keys(groups).length}</div></div>
+    <div class="card"><div class="card-label">Line Items</div><div class="card-value">${pos.length}</div></div>
+    <div class="card"><div class="card-label">Vendors</div><div class="card-value">${new Set(pos.map(p=>p.vendor)).size}</div></div>`;
+  document.getElementById('poCount').textContent=`${gArr.length} POs`;rPOT(gArr);
+}
+function rPOT(d){if(!d)d=S._c.posF||[];let html='';
+  d.forEach(g=>{
+    const itemSummary=g.items.slice(0,3).map(p=>p.part).join(', ')+(g.items.length>3?` +${g.items.length-3} more`:'');
+    const earliestDate=g.items.reduce((min,p)=>{const d=p.expected_date;return d&&(!min||d<min)?d:min;},null);
+    html+=`<tr class="po-group" onclick="this.classList.toggle('open');this.parentElement.querySelectorAll('.pd-${g.po}').forEach(r=>r.classList.toggle('open'))">
+    <td style="color:var(--accent)">PO #${g.po} - ${g.vendor}</td>
+    <td style="font-size:12px;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${g.items.map(p=>p.part+' x'+p.qty_remaining).join(', ')}">${itemSummary}</td>
+    <td class="num">${g.items.length}</td><td class="num">${fmt(g.totalQty)}</td><td>${fmtDate(fixTZ(earliestDate))}</td>
+    <td><span class="badge ${g.status==='Issued'?'badge-healthy':'badge-atrisk'}">${g.status}</span></td></tr>`;
+    g.items.forEach(p=>{html+=`<tr class="po-detail pd-${g.po}"><td></td><td>${p.part}</td><td></td><td class="num">${fmt(p.qty_remaining)}</td><td>${p._date||'--'}</td>
+      <td><span class="badge ${p.status==='Issued'?'badge-healthy':'badge-atrisk'}">${p.status}</span></td></tr>`;});
+  });document.getElementById('poBody').innerHTML=html;
+}
+
+// ======== BOMs ========
+function rBOM(){let d=(S.data.boms||[]).filter(b=>inc(b.finished_good)&&inc(b.component));
+  if(S.bomQ){const q=S.bomQ.toLowerCase();d=d.filter(r=>(r.finished_good+r.component).toLowerCase().includes(q));}
+  S._c.bomsF=d;rBOMT(d);
+}
+function rBOMT(d){if(!d)d=S._c.bomsF||[];document.getElementById('bomCount').textContent=`${d.length} rows`;
+  document.getElementById('bomBody').innerHTML=d.map(r=>`<tr><td>${r.finished_good}</td><td>${r.component}</td><td class="num">${r.qty_per}</td><td>${r.uom}</td></tr>`).join('');
+}
+
+// ======== MANUFACTURING ORDERS TAB ========
+function rMO(){
+  const outs=S.data.open_mo_outputs||[];const consumed=S.data.open_mo_consumed||[];const closed=S.data.closed_mos||[];
+  const inv=S.data.inventory||[];const iL={};inv.forEach(i=>{iL[i.part_number]={oh:i.on_hand_qty||0,av:i.available_qty!==undefined?i.available_qty:i.on_hand_qty||0};});
+
+  // === SECTION 1: Open MOs (grouped by MO#) ===
+  const moGroups={};
+  outs.forEach(o=>{const k=o.mo_num;if(!moGroups[k])moGroups[k]={mo:k,status:o.status_id===10?'Entered':o.status_id===50?'In Progress':'Unknown',dateSched:o.date_scheduled,note:o.note,items:[],totalQty:0};
+    moGroups[k].items.push(o);moGroups[k].totalQty+=o.qty_to_fulfill||0;});
+  let moArr=Object.values(moGroups).sort((a,b)=>String(a.dateSched).localeCompare(String(b.dateSched)));
+  // Filter by search
+  if(S.moQ){const q=S.moQ.toLowerCase();moArr=moArr.filter(g=>g.items.some(i=>i.part_number.toLowerCase().includes(q))||String(g.mo).includes(q));}
+  // Exclude Labour from consumed RM
+  const cleanConsumed=consumed.filter(c=>!c.part_number.toLowerCase().includes('labour'));
+  document.getElementById('moCards').innerHTML=`
+    <div class="card"><div class="card-label">Open MOs</div><div class="card-value">${moArr.length}</div></div>
+    <div class="card"><div class="card-label">FG Lines</div><div class="card-value">${outs.length}</div></div>
+    <div class="card"><div class="card-label">RM Lines</div><div class="card-value">${cleanConsumed.length}</div></div>
+    <div class="card"><div class="card-label">Total Units</div><div class="card-value">${fmt(outs.reduce((s,o)=>s+(o.qty_to_fulfill||0),0))}</div></div>`;
+  document.getElementById('moCount').textContent=`${moArr.length} MOs`;
+  let moHtml='';
+  moArr.forEach(g=>{
+    const stBdg=g.status==='Entered'?'badge-atrisk':'badge-healthy';
+    const productSummary=g.items.slice(0,3).map(i=>i.part_number).join(', ')+(g.items.length>3?` +${g.items.length-3} more`:'');
+    moHtml+=`<tr class="po-group" onclick="this.classList.toggle('open');this.parentElement.querySelectorAll('.md-${g.mo}').forEach(r=>r.classList.toggle('open'))">
+      <td style="color:var(--accent)">MO #${g.mo} - ${fmtDate(fixTZ(g.dateSched))}</td>
+      <td style="font-size:12px;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${g.items.map(i=>i.part_number+' x'+i.qty_to_fulfill).join(', ')}">${productSummary}</td>
+      <td class="num">${g.items.length}</td>
+      <td class="num" style="font-weight:600">${fmt(g.totalQty)}</td>
+      <td><span class="badge ${stBdg}">${g.status}</span></td></tr>`;
+    g.items.forEach(i=>{moHtml+=`<tr class="po-detail md-${g.mo}"><td></td>
+      <td>${i.part_number}</td><td></td>
+      <td class="num">${fmt(i.qty_to_fulfill)} ${i.uom||'ea'}</td>
+      <td><span class="badge ${stBdg}">${g.status}</span></td></tr>`;});
+  });
+  document.getElementById('moBody').innerHTML=moHtml;
+
+  // === SECTION 2: Consolidated RM Requirements ===
+  const rmAgg={};
+  cleanConsumed.forEach(c=>{const k=c.part_number;const uom=c.uom||'ea';
+    if(!rmAgg[k])rmAgg[k]={pn:k,cat:catRM(k),qty:0,uom,mos:new Set()};
+    rmAgg[k].qty+=c.qty_to_fulfill||0;rmAgg[k].mos.add(c.mo_num);});
+  const rmArr=Object.values(rmAgg).map(r=>{
+    const oh=iL[r.pn]||{oh:0,av:0};
+    // Convert to kg if weight UOM
+    let dispQty=r.qty,dispOH=oh.av,dispUom=r.uom;
+    if(isWt(r.uom)){dispQty=toKg(r.qty,r.uom);dispOH=toKg(oh.av,r.uom);dispUom='kg';}
+    const short=Math.max(0,dispQty-dispOH);
+    return{pn:r.pn,cat:r.cat,qty:Math.round(dispQty*100)/100,uom:dispUom,oh:Math.round(dispOH*100)/100,short:Math.round(short*100)/100,moCount:r.mos.size,moList:[...r.mos].sort().join(', ')};
+  }).sort((a,b)=>b.short-a.short);
+  S._c.mormF=rmArr;
+  document.getElementById('moRMCount').textContent=`${rmArr.length} materials`;
+  rMORM_T(rmArr);
+
+  // === SECTION 3: Production Schedule (for Axia) ===
+  const schedArr=outs.map(o=>{
+    const ds=new Date(fixTZ(o.date_scheduled));
+    const monthLabel=isNaN(ds)?'Unknown':ds.toLocaleDateString('en-CA',{month:'long',year:'numeric'});
+    return{month:monthLabel,monthSort:o.date_scheduled,moNum:o.mo_num,pn:o.part_number,cat:getCat(o.part_number),
+      qty:o.qty_to_fulfill,fulfilled:o.qty_fulfilled,uom:o.uom||'ea',
+      status:o.status_id===10?'Entered':o.status_id===50?'In Progress':'Unknown'};
+  }).sort((a,b)=>String(a.monthSort).localeCompare(String(b.monthSort))||a.pn.localeCompare(b.pn));
+  S._c.moSched=schedArr;
+  document.getElementById('moSchedCount').textContent=`${schedArr.length} production lines`;
+  let prevMonth='';
+  document.getElementById('moSchedBody').innerHTML=schedArr.map(r=>{
+    const showMonth=r.month!==prevMonth;prevMonth=r.month;
+    return`<tr>${showMonth?`<td rowspan="1" style="font-weight:600;color:var(--accent)">${r.month}</td>`:'<td></td>'}
+      <td style="color:var(--text-muted)">${r.moNum}</td><td>${r.pn}</td><td style="font-size:12px;color:var(--text-muted)">${r.pn}</td>
+      <td style="font-size:11px">${r.cat}</td><td class="num" style="font-weight:600">${fmt(r.qty)}</td>
+      <td><span class="badge ${r.status==='Entered'?'badge-atrisk':'badge-healthy'}">${r.status}</span></td></tr>`;
+  }).join('');
+
+  // === SECTION 4: Closed MOs ===
+  document.getElementById('moClosedCount').textContent=`${closed.length} recent completions`;
+  document.getElementById('moClosedBody').innerHTML=closed.map(r=>`<tr>
+    <td style="color:var(--text-muted)">${r.mo_num}</td><td>${r.part_number}</td>
+    <td class="num">${fmt(r.qty_to_fulfill)}</td><td class="num" style="color:var(--green)">${fmt(r.qty_fulfilled)}</td>
+    <td>${fmtDate(r.date_completed)}</td></tr>`).join('');
+}
+function rMORM_T(d){if(!d)d=S._c.mormF||[];
+  document.getElementById('moRMBody').innerHTML=d.map(r=>`<tr>
+    <td>${r.pn}</td><td style="font-size:11px;color:var(--text-muted)">${r.cat}</td>
+    <td class="num" style="font-weight:600">${fmt(r.qty,1)}</td><td>${r.uom}</td>
+    <td class="num">${fmt(r.oh,1)}</td>
+    <td class="num" style="font-weight:600;color:${r.short>0?'var(--red)':'var(--green)'}">${r.short>0?fmt(r.short,1):'OK'}</td>
+    <td style="font-size:11px;color:var(--text-muted)">MO# ${r.moList}</td></tr>`).join('');
+}
+function printMORM(){
+  const d=S._c.mormF||[];const today=new Date().toLocaleDateString('en-CA');
+  let h=`<html><head><title>MO Raw Material Requirements</title><style>body{font-family:Arial,sans-serif;font-size:11px;padding:15px}table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid #ccc;padding:4px 8px;text-align:left}th{background:#f0f0f0;font-size:10px}.num{text-align:right}h1{font-size:16px;margin:0 0 4px}p{font-size:10px;color:#666;margin:0 0 10px}.short{color:red;font-weight:bold}</style></head><body>`;
+  h+=`<h1>KANEL INC. - Raw Materials Required for Open MOs</h1><p>Generated: ${today} | ${d.length} materials | ${d.filter(r=>r.short>0).length} shortages</p>`;
+  h+=`<table><tr><th>Raw Material</th><th>Category</th><th>Qty Required</th><th>UOM</th><th>On Hand</th><th>Shortage</th><th>MOs</th></tr>`;
+  d.forEach(r=>{h+=`<tr><td>${r.pn}</td><td>${r.cat}</td><td class="num">${fmt(r.qty,1)}</td><td>${r.uom}</td><td class="num">${fmt(r.oh,1)}</td><td class="num ${r.short>0?'short':''}">${r.short>0?fmt(r.short,1):'OK'}</td><td>${r.moList}</td></tr>`;});
+  h+=`</table></body></html>`;
+  const w=window.open('','_blank');w.document.write(h);w.document.close();w.print();
+}
+function printSchedule(){
+  const d=S._c.moSched||[];const today=new Date().toLocaleDateString('en-CA');
+  let h=`<html><head><title>Axia Production Schedule</title><style>body{font-family:Arial,sans-serif;font-size:11px;padding:20px}table{border-collapse:collapse;width:100%;margin:10px 0}th,td{border:1px solid #ccc;padding:6px 10px;text-align:left}th{background:#f0f0f0}.num{text-align:right}h1{font-size:18px;margin:0 0 2px}h2{font-size:14px;margin:20px 0 6px;border-bottom:2px solid #000;padding-bottom:4px}p{font-size:11px;color:#666;margin:0 0 8px}.month-hdr{background:#333;color:#fff;font-weight:bold;font-size:12px;padding:8px 10px}</style></head><body>`;
+  h+=`<h1>KANEL INC. - PRODUCTION SCHEDULE FOR AXIA</h1>`;
+  h+=`<p><b>Prepared:</b> ${today} | <b>Status:</b> All orders listed below are ENTERED in Fishbowl. Axia to produce per this schedule.</p>`;
+  h+=`<p><b>Instructions:</b> Produce each SKU in the quantity shown. Each row is one production run. Contact Kanel supply chain team with any questions before starting production.</p>`;
+  // Group by month
+  const byMonth={};d.forEach(r=>{if(!byMonth[r.month])byMonth[r.month]=[];byMonth[r.month].push(r);});
+  Object.entries(byMonth).forEach(([month,items])=>{
+    const total=items.reduce((s,r)=>s+r.qty,0);
+    h+=`<h2>${month} (${items.length} runs, ${fmt(total)} units)</h2>`;
+    h+=`<table><tr><th>#</th><th>MO #</th><th>Product</th><th>Category</th><th style="text-align:right">Quantity</th><th>UOM</th><th>Notes</th></tr>`;
+    items.forEach((r,i)=>{h+=`<tr><td>${i+1}</td><td>${r.moNum}</td><td><b>${r.pn}</b></td><td>${r.cat}</td><td class="num"><b>${fmt(r.qty)}</b></td><td>${r.uom}</td><td></td></tr>`;});
+    h+=`</table>`;
+  });
+  h+=`<div style="margin-top:30px;border-top:2px solid #000;padding-top:10px"><p><b>Authorized by:</b> _________________________ <b>Date:</b> _____________</p>
+  <p><b>Received by Axia:</b> _________________________ <b>Date:</b> _____________</p></div>`;
+  h+=`</body></html>`;
+  const w=window.open('','_blank');w.document.write(h);w.document.close();w.print();
+}
+
+// ======== MANAGE ITEMS ========
+function rManage(){
+  const inv=S.data?S.data.inventory||[]:[];const q=(document.getElementById('manageSearch')||{}).value||'';
+  const f=(document.getElementById('manageFilter')||{}).value||'all';let d=inv.slice();
+  if(q)d=d.filter(r=>r.part_number.toLowerCase().includes(q.toLowerCase()));
+  if(f==='included')d=d.filter(r=>inc(r.part_number));else if(f==='excluded')d=d.filter(r=>!inc(r.part_number));
+  else if(f==='fg')d=d.filter(r=>r.item_class==='FG');else if(f==='rm')d=d.filter(r=>r.item_class==='RM');
+  document.getElementById('manageCount').textContent=`${d.length} items (${inv.filter(i=>!inc(i.part_number)).length} excluded)`;
+  document.getElementById('manageBody').innerHTML=d.map(r=>{const ex=!inc(r.part_number);
+    return`<tr style="${ex?'opacity:0.5':''}"><td><input type="checkbox" ${!ex?'checked':''} onchange="toggleItem('${r.part_number.replace(/'/g,"\\'")}',this.checked)"></td>
+    <td>${r.part_number}</td><td style="font-size:11px;color:var(--text-muted)">${r.item_class}</td><td class="num">${fmt(r.on_hand_qty)}</td></tr>`;}).join('');
+}
+function toggleItem(pn,included){if(included)delete S.excluded[pn];else S.excluded[pn]=true;localStorage.setItem('kh-excl',JSON.stringify(S.excluded));rManage();}
+function autoExclude(){const inv=S.data?S.data.inventory||[]:[];let count=0;
+  inv.forEach(i=>{if(AUTO_EXCL.some(p=>i.part_number.includes(p))){if(!S.excluded[i.part_number]){S.excluded[i.part_number]=true;count++;}}});
+  localStorage.setItem('kh-excl',JSON.stringify(S.excluded));alert(`Auto-excluded ${count} items.`);rManage();renderAll();}
+
+// ======== CSV EXPORT ========
+function xcsv(tab){
+  let rows=[],fn='';const ml=S.mL||[];
+  if(tab==='woh'){rows=[['Product','Category','On Hand','Committed','Available','Wkly Fcst','DOH','WOH','MOH','Replen Date','Replen Qty','Status']];
+    (S._c.wohF||[]).forEach(r=>rows.push([r.pn,r.cat,r.oh,r.cm,r.av,r.wf||'',r.doh||'',r.woh||'',r.moh||'',r.replen?fmtDate(r.replen):'',r.replenQty||'',sLbl(r.st)]));fn='Kanel_WOH.csv';
+  }else if(tab==='rmdemand'){rows=[['Material','Category','UOM',...ml,'TOTAL','OH','Open PO','Net Need','MOS','Status']];
+    (S._c.rmdemandF||[]).forEach(r=>rows.push([r.cp,r.rmCat,r.uom,...(r.mo||[]).map(v=>Math.round(v)),Math.round(r.annual),r.oh,r.po,r.net,r.mos,sLbl(r.st)]));fn='Kanel_RM_Demand.csv';
+  }else if(tab==='casepack'){rows=[['Product','On Hand','Demand','Need','Can Build','Limiting','Status']];
+    (S._c.casepackF||[]).forEach(r=>rows.push([r.pn,r.oh,r.demand,r.need,r.canBuild,r.limComp,sLbl(r.st)]));fn='Kanel_CasePack.csv';
+  }else if(tab==='axia'){rows=[['SKU','Category','Available','WOH','Stockout',...ml.map(m=>m+' Ending'),...ml.map(m=>m+' Receipts'),'Raw Need','MO Qty','MOQ','Status']];
+    (S._c.axiaF||[]).forEach(r=>rows.push([r.pn,r.cat,r.av,r.woh,r.soM,...(r.proj||[]),...(r.rcptRow||[]),r.rawNeed,r.moqQty,r.moq,sLbl(r.st)]));fn='Kanel_Axia.csv';
+  }else if(tab==='pos'){rows=[['PO#','Vendor','Part','Qty Remaining','Expected','Status']];
+    (S.data.open_pos||[]).forEach(r=>rows.push([r.po_num,r.vendor,r.part,r.qty_remaining,fmtDate(r.expected_date),r.status]));fn='Kanel_OpenPOs.csv';
+  }else if(tab==='boms'){rows=[['Finished Good','Component','Qty Per','UOM']];(S._c.bomsF||[]).forEach(r=>rows.push([r.finished_good,r.component,r.qty_per,r.uom]));fn='Kanel_BOMs.csv';
+  }else if(tab==='mo-open'){rows=[['MO#','Part','Qty','Fulfilled','UOM','Scheduled','Status']];
+    (S.data.open_mo_outputs||[]).forEach(r=>rows.push([r.mo_num,r.part_number,r.qty_to_fulfill,r.qty_fulfilled,r.uom,fmtDate(r.date_scheduled),r.status_id===10?'Entered':'In Progress']));fn='Kanel_OpenMOs.csv';
+  }else if(tab==='mo-rm'){rows=[['Raw Material','Category','Qty Required','UOM','On Hand','Shortage','MOs']];
+    (S._c.mormF||[]).forEach(r=>rows.push([r.pn,r.cat,r.qty,r.uom,r.oh,r.short,r.moList]));fn='Kanel_MO_RM_Requirements.csv';
+  }else if(tab==='mo-sched'){rows=[['Month','MO#','Product','Category','Qty','UOM','Status']];
+    (S._c.moSched||[]).forEach(r=>rows.push([r.month,r.moNum,r.pn,r.cat,r.qty,r.uom,r.status]));fn='Kanel_Production_Schedule.csv';
+  }else if(tab==='mo-closed'){rows=[['MO#','Part','Qty Ordered','Qty Fulfilled','Completed']];
+    (S.data.closed_mos||[]).forEach(r=>rows.push([r.mo_num,r.part_number,r.qty_to_fulfill,r.qty_fulfilled,fmtDate(r.date_completed)]));fn='Kanel_ClosedMOs.csv';
+  }
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;a.click();
+}
+
+// ======== EXPORT ALL XLSX ========
+async function exportAllXLSX(){
+  if(!window.XLSX){const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';document.head.appendChild(s);await new Promise(r=>s.onload=r);}
+  const wb=XLSX.utils.book_new();const ml=S.mL||[];
+  const mkSheet=(data,name)=>{XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),name);};
+  // WOH
+  mkSheet([['Product','Category','On Hand','Committed','Available','Wkly Fcst','DOH','WOH','MOH','Replen Date','Replen Qty','Status'],
+    ...(S._c.woh||[]).map(r=>[r.pn,r.cat,r.oh,r.cm,r.av,r.wf||'',r.doh||'',r.woh||'',r.moh||'',r.replen?fmtDate(r.replen):'',r.replenQty||'',sLbl(r.st)])],'Weeks on Hand');
+  // RM Demand
+  mkSheet([['Material','Category','UOM',...ml,'TOTAL','OH','Open PO','Net Need','MOS','Status'],
+    ...(S._c.rmdemand||[]).map(r=>[r.cp,r.rmCat,r.uom,...(r.mo||[]).map(v=>Math.round(v)),Math.round(r.annual),r.oh,r.po,r.net,r.mos,sLbl(r.st)])],'RM Demand');
+  // Case Pack
+  mkSheet([['Product','On Hand','Demand','Need','Can Build','Limiting','Status'],
+    ...(S._c.casepack||[]).map(r=>[r.pn,r.oh,r.demand,r.need,r.canBuild,r.limComp,sLbl(r.st)])],'Case Pack Builder');
+  // Axia
+  mkSheet([['SKU','Category','Available','WOH','Stockout',...ml.map(m=>m+' Ending'),...ml.map(m=>m+' Receipts'),'Raw Need','MO Qty','Status'],
+    ...(S._c.axia||[]).map(r=>[r.pn,r.cat,r.av,r.woh,r.soM,...(r.proj||[]),...(r.rcptRow||[]),r.rawNeed,r.moqQty,sLbl(r.st)])],'Axia Production');
+  // Open MOs
+  mkSheet([['MO#','Part','Qty','Fulfilled','Scheduled','Status'],
+    ...(S.data.open_mo_outputs||[]).map(r=>[r.mo_num,r.part_number,r.qty_to_fulfill,r.qty_fulfilled,fmtDate(r.date_scheduled),r.status_id===10?'Entered':'In Progress'])],'Open MOs');
+  // MO RM Requirements
+  mkSheet([['Raw Material','Category','Qty Required','UOM','On Hand','Shortage','MOs'],
+    ...(S._c.mormF||[]).map(r=>[r.pn,r.cat,r.qty,r.uom,r.oh,r.short,r.moList])],'MO RM Requirements');
+  // Production Schedule
+  mkSheet([['Month','MO#','Product','Category','Qty','Status'],
+    ...(S._c.moSched||[]).map(r=>[r.month,r.moNum,r.pn,r.cat,r.qty,r.status])],'Production Schedule');
+  // Open POs
+  mkSheet([['PO#','Vendor','Part','Qty Remaining','Expected','Status'],
+    ...(S.data.open_pos||[]).map(r=>[r.po_num,r.vendor,r.part,r.qty_remaining,fmtDate(r.expected_date),r.status])],'Open POs');
+  XLSX.writeFile(wb,`Kanel_Hub_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// ======== RENDER ALL ========
+function renderAll(){if(!S.data)return;rWOH();rRMD();rCP();rAX();rPO();rBOM();rMO();}
+
+// ======== CONNECTION ========
+async function saveConfig(){
+  const url=document.getElementById('setupUrl').value.trim().replace(/\/$/,'');
+  const err=document.getElementById('setupError');if(!url){err.textContent='URL required';err.style.display='block';return;}
+  err.textContent='Connecting...';err.style.display='block';err.style.color='var(--text-muted)';
+  try{const r=await fetch(`${url}/api/health`);if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const d=await r.json();if(d.status!=='ok')throw new Error('Bad response');
+    S.config={url};localStorage.setItem('kh-cfg',JSON.stringify(S.config));
+    document.getElementById('setupScreen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');refreshData();
+  }catch(e){err.style.color='var(--red)';err.textContent=`Failed: ${e.message}. Is the proxy running?`;}}
+async function refreshData(){
+  const btn=document.getElementById('refreshBtn');btn.disabled=true;
+  btn.innerHTML='<div class="loading-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div>Loading...';
+  try{const r=await fetch(`${S.config.url}/api/woh`);if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    S.data=await r.json();
+    document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleString('en-CA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    renderAll();
+  }catch(e){alert('Failed: '+e.message);}
+  btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>Refresh';}
+function loadConfig(){
+  const saved=localStorage.getItem('kh-cfg');
+  if(saved){try{S.config=JSON.parse(saved);
+    document.getElementById('setupScreen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');
+    const fc=localStorage.getItem('kh-fc');if(fc)S.forecast=JSON.parse(fc);
+    const fm=localStorage.getItem('kh-fm');if(fm)S.fm=JSON.parse(fm);
+    const ml=localStorage.getItem('kh-ml');if(ml)S.mL=JSON.parse(ml);
+    const ex=localStorage.getItem('kh-excl');if(ex)S.excluded=JSON.parse(ex);
+    refreshData();
+  }catch(e){localStorage.removeItem('kh-cfg');}}}
+loadConfig();
+</script>
+</body></html>
