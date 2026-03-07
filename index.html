@@ -650,18 +650,42 @@ function toggleWohItem(pn,show){
   rWohManage();rWOH();
 }
 function getCat(n){
-  const l=n.toLowerCase();
-  if(l.includes('rimmer')||l.includes('caesar')&&!l.includes('bulk')&&!l.includes('label')&&!l.includes('tin')||l.includes('margarita')&&!l.includes('bulk')&&!l.includes('label')&&!l.includes('tin')||l.includes('bombshell')&&!l.includes('bulk')||l.includes('spritz')&&!l.includes('bulk')||l.includes('gingerbread')&&!l.includes('bulk')||l.includes('peppermint')&&!l.includes('bulk')||l.includes('sour cherry')&&!l.includes('bulk')||l.includes('holiday cocktail'))return'Cocktail Rimmer';
-  if(l.includes('refill bag'))return'Refill';if(l.includes('case pack'))return'Case Pack';
-  if(l.includes('collection')||l.includes('duo')&&!l.includes('sleeve')||l.includes('trio')||l.includes('gift')||l.includes('bonjour')||l.includes('traveler')||l.includes('edit ')&&!l.includes('salt')||l.includes('bright &')||l.includes('bring the'))return'Gift';
+  if(!n)return'Other';
+  // Primary: SKU prefix (post-migration standard)
+  const pfx=n.substring(0,3).toUpperCase();
+  if(pfx==='BLE')return'Spice Blend';
+  if(pfx==='SAL')return'Sea Salt';
+  if(pfx==='RIM')return'Cocktail Rimmer';
+  if(pfx==='REF')return'Refill';
+  if(pfx==='GIF')return'Gift';
+  if(pfx==='COL')return'Collection';
+  if(pfx==='PRO')return'Promotion';
+  if(pfx==='BYO')return'Build Your Own';
+  if(pfx==='MAR'||pfx==='SHE'||pfx==='POP'||pfx==='DEM')return'Marketing';
+  // Fallback: description-based for any legacy / unmapped parts
+  const desc=(S._descMap&&S._descMap[n])||n;
+  const l=desc.toLowerCase();
+  if(l.includes('rimmer')||l.includes('caesar')&&!l.includes('bulk')||l.includes('margarita')&&!l.includes('bulk')||l.includes('bombshell')&&!l.includes('bulk')||l.includes('spritz')&&!l.includes('bulk')||l.includes('gingerbread')&&!l.includes('bulk')||l.includes('peppermint')&&!l.includes('bulk')||l.includes('sour cherry')&&!l.includes('bulk')||l.includes('holiday cocktail'))return'Cocktail Rimmer';
+  if(l.includes('refill bag'))return'Refill';
+  if(l.includes('case pack'))return'Case Pack';
+  if(l.includes('collection')||l.includes('trio')||l.includes('gift')||l.includes('bonjour')||l.includes('traveler'))return'Gift';
   if(l.includes(' salt')||l.includes('fleur de sel')||l.includes('pearl')||l.includes('flake salt')||l.includes('peppercorn')&&!l.includes('bulk'))return'Sea Salt';
   return'Spice Blend';
 }
 function catRM(n){
-  const l=n.toLowerCase();if(l.startsWith('bulk'))return'Bulk Ingredients';if(l.startsWith('label')||l.includes('round label'))return'Labels';
-  if(l.includes('tube'))return'Tubes';if(l.includes('bag')||l.includes('pouch')||l.includes('compostable'))return'Bags & Pouches';
-  if(l.startsWith('box')||l.includes('insert')||l.includes('sleeve'))return'Boxes & Inserts';if(l.includes('jar')||l.includes('lid')||l.includes('glass'))return'Jars & Lids';
-  if(l.includes('tin')||l.startsWith('rm-rimmer'))return'Tins';if(l.includes('case pack'))return'Case Pack Boxes';return'Other Components';
+  // Use description if available (RM parts are now SKUs like PKG-0001)
+  const desc=(S._descMap&&S._descMap[n])||n;
+  const l=desc.toLowerCase();
+  const pn=n.toLowerCase();
+  if(l.startsWith('bulk')||pn.startsWith('blk-'))return'Bulk Ingredients';
+  if(l.startsWith('label')||l.includes('round label')||pn.startsWith('lbl-'))return'Labels';
+  if(l.includes('tube')||pn.startsWith('tub-'))return'Tubes';
+  if(l.includes('bag')||l.includes('pouch')||l.includes('compostable')||pn.startsWith('bag-'))return'Bags & Pouches';
+  if(l.startsWith('box')||l.includes('insert')||l.includes('sleeve')||pn.startsWith('box-'))return'Boxes & Inserts';
+  if(l.includes('jar')||l.includes('lid')||l.includes('glass')||pn.startsWith('jar-'))return'Jars & Lids';
+  if(l.includes('tin')||l.startsWith('rm-rimmer'))return'Tins';
+  if(l.includes('case pack'))return'Case Pack Boxes';
+  return'Other Components';
 }
 
 // ======== NAV / SORT ========
@@ -705,20 +729,20 @@ function showFU(){
     for(let i=0;i<Math.min(10,rows.length);i++){if(rows[i]&&rows[i].length>8){let mc=0;for(let c=5;c<rows[i].length;c++){if(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i.test(String(rows[i][c]||'')))mc++;}if(mc>=2){hdr=i;break;}}}
     if(hdr>=0){
       for(let c=6;c<=18&&c<rows[hdr].length;c++){const l=String(rows[hdr][c]).trim();if(l&&/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i.test(l))ml.push(l);}
-      const inv=(S.data&&S.data.inventory)||[];const pn=inv.map(i=>i.part_number);
+      const inv=(S.data&&S.data.inventory)||[];
+      const pnSet=new Set(inv.map(i=>i.part_number));
       let matched=0,total=0;
-      const corr={"Bonjour, Hi.":"Bonjour, Hi","Spice Traveler":"Spice traveler","epices a Rosbif":"epices a rosbif","Mineral - Pure - Salt Collection":"Mineral: Pure - Salt Collection","The Sapio Collection":"Sapio"};
       let nameCol=0,dataStart=hdr+1;
       for(let i=hdr+1;i<Math.min(hdr+8,rows.length);i++){const r=rows[i];if(!r)continue;const c0=String(r[0]||'').trim().toLowerCase();if(!c0||c0==='fct'||c0==='category'||c0==='month')continue;if(r[3]&&String(r[3]).trim().length>2){nameCol=3;}dataStart=i;break;}
       for(let i=dataStart;i<rows.length;i++){
-        const r=rows[i];if(!r)continue;let name=String(r[nameCol]||'').trim();if(!name||name==='None'||name.toLowerCase()==='category')continue;total++;
-        let mn=pn.find(p=>p===name)||pn.find(p=>p.toLowerCase()===name.toLowerCase())||pn.find(p=>p.replace(/\s+/g,' ').toLowerCase()===name.replace(/\s+/g,' ').toLowerCase());
-        if(!mn&&corr[name])mn=pn.find(p=>p===corr[name]);
-        const key=mn||name;let yr=0;const mo=[];
+        const r=rows[i];if(!r)continue;const name=String(r[nameCol]||'').trim();if(!name||name==='None'||name.toLowerCase()==='category')continue;total++;
+        // Exact match only -- post-migration all keys are clean SKUs
+        const matched_pn=pnSet.has(name);
+        const key=name;let yr=0;const mo=[];
         for(let c=6;c<=18&&c<r.length;c++){const v=parseFloat(r[c])||0;yr+=v;mo.push(v);}
-        if(yr>0){annual[key]=(annual[key]||0)+yr;monthly[key]=(monthly[key]||[]).length?monthly[key].map((v,i)=>v+(mo[i]||0)):mo;if(mn)matched++;}
+        if(yr>0){annual[key]=(annual[key]||0)+yr;monthly[key]=(monthly[key]||[]).length?monthly[key].map((v,i)=>v+(mo[i]||0)):mo;if(matched_pn)matched++;}
       }
-      S.mL=ml;alert(`Forecast loaded: ${matched}/${total} SKUs matched, ${ml.length} months (${ml[0]} to ${ml[ml.length-1]})`);
+      S.mL=ml;alert(`Forecast loaded: ${matched}/${total} SKUs matched to Fishbowl parts, ${ml.length} months (${ml[0]} to ${ml[ml.length-1]})`);
     }
     S.forecast=annual;S.fm=monthly;
     localStorage.setItem('kh-fc',JSON.stringify(annual));localStorage.setItem('kh-fm',JSON.stringify(monthly));localStorage.setItem('kh-ml',JSON.stringify(ml));
@@ -1159,15 +1183,15 @@ function showBOMGaps(){
 function showForecastNoBOM(){
   const fc=S.forecast||{},boms=S.data.boms||[];
   const bomFGs=new Set();boms.forEach(b=>bomFGs.add(b.finished_good));
-  const bomFGsLower=new Set();boms.forEach(b=>bomFGsLower.add(b.finished_good.toLowerCase()));
+  // Exact key match only - no fuzzy/case normalization post-migration
   const gaps=Object.entries(fc).filter(([name,qty])=>{
     if(qty<=0)return false;
-    return!bomFGs.has(name)&&!bomFGsLower.has(name.toLowerCase());
+    return!bomFGs.has(name);
   }).map(([name,qty])=>({name,qty:Math.round(qty)})).sort((a,b)=>b.qty-a.qty);
   if(gaps.length===0){alert('All forecasted SKUs have matching BOMs. No gaps found.');return;}
   const w=window.open('','_blank','width=700,height=700');
   let h=`<html><head><title>Forecasted SKUs Missing BOM</title><style>body{font-family:Arial,sans-serif;padding:20px;background:#1a1a1a;color:#eee}table{border-collapse:collapse;width:100%}th,td{border:1px solid #444;padding:6px 10px}th{background:#2d2d2d;color:#d4a843;font-size:12px}td{font-size:13px}h2{color:#d4a843;font-size:16px}.qty{color:#aaa;font-size:12px}</style></head><body>`;
-  h+=`<h2>${gaps.length} Forecasted SKUs with No BOM in Fishbowl</h2><p style="color:#888;font-size:12px">These SKUs exist in the forecast file but have no matching BOM. Either the name doesn't match or the BOM hasn't been created yet. Sorted by annual forecast volume.</p>`;
+  h+=`<h2>${gaps.length} Forecasted SKUs with No BOM in Fishbowl</h2><p style="color:#888;font-size:12px">Exact SKU key match only. These forecast names have no matching BOM finished_good in Fishbowl. Sorted by annual forecast volume.</p>`;
   h+=`<table><tr><th>#</th><th>Forecast SKU Name</th><th>Annual Forecast</th></tr>`;
   gaps.forEach((g,i)=>{h+=`<tr><td>${i+1}</td><td>${g.name}</td><td class="qty">${g.qty.toLocaleString()}</td></tr>`;});
   h+=`</table></body></html>`;
@@ -1177,9 +1201,17 @@ function showForecastNoBOM(){
 // ======== CASE PACK BUILDER ========
 // Kit/Case Pack/Gift pattern - items built in-house at Kanel (not Axia)
 const KANEL_PROD_RE=/case pack|collection|duo|kit|trio|gift box|edit |shaken|holiday spirit|bright|bring|bonjour|bbq duo|smoke & fire|roasted & raw|top 5|sapio|voyager|mineral|spice lover|family fave|best seller|full spice|traveler/i;
-// Explicit Kanel Production items not caught by the regex
+// Explicit Kanel Production items - legacy names AND their new SKU equivalents
 const KANEL_PROD_EXTRA=['Bulk - Aglio Napoletano','Bulk - Charred Lemon Sea Salt','Bulk - Lemon Blueberry Bombshell','Bulk - Midnight Maple','Bulk - Midnight Umami','Bulk - Quebec Maple Smoked Salt','Bulk - Salt + Chili Margarita','Bulk - Sour Cherry','Bulk - The Ultimate Caesar','Spicy Jalapeno & Lime - 500g','The Summer Edit','The Ultimate Caesar - 500g'];
-function isKanelProd(n){return KANEL_PROD_RE.test(n)||KANEL_PROD_EXTRA.includes(n);}
+function isKanelProd(n){
+  if(!n)return false;
+  // SKU prefix check: GIF=Gifts, COL=Collections, BYO=Build Your Own are always Kanel Production
+  const pfx=n.substring(0,3).toUpperCase();
+  if(pfx==='GIF'||pfx==='COL'||pfx==='BYO')return true;
+  // Description fallback for legacy / unmapped items
+  const desc=(S._descMap&&S._descMap[n])||n;
+  return KANEL_PROD_RE.test(desc)||KANEL_PROD_EXTRA.includes(n);
+}
 
 function calcCP(){
   const boms=S.data.boms||[],inv=S.data.inventory||[],fc=S.forecast||{},fm=S.fm||{},ml=S.mL||[];
@@ -2594,7 +2626,13 @@ function rManage(){
 }
 function toggleItem(pn,included){if(included)delete S.excluded[pn];else S.excluded[pn]=true;localStorage.setItem('kh-excl',JSON.stringify(S.excluded));rManage();}
 function autoExclude(){const inv=S.data?S.data.inventory||[]:[];let count=0;
-  inv.forEach(i=>{if(AUTO_EXCL.some(p=>i.part_number.includes(p))){if(!S.excluded[i.part_number]){S.excluded[i.part_number]=true;count++;}}});
+  inv.forEach(i=>{
+    // Match against both part_number (catches legacy names + explicit SKU patterns like GIF-0008-C)
+    // and description (needed when part_number is a clean SKU like PKG-0001)
+    const desc=(S._descMap&&S._descMap[i.part_number])||i.part_number;
+    const matchTarget=i.part_number+'|'+desc;
+    if(AUTO_EXCL.some(p=>matchTarget.includes(p))){if(!S.excluded[i.part_number]){S.excluded[i.part_number]=true;count++;}}
+  });
   localStorage.setItem('kh-excl',JSON.stringify(S.excluded));alert(`Auto-excluded ${count} items.`);rManage();renderAll();}
 
 // ======== EXPORT SYSTEM ========
@@ -2723,7 +2761,14 @@ async function exportToGDrive(wb,fileName){
 }
 
 // ======== RENDER ALL ========
-function renderAll(){if(!S.data)return;S._abc=calcABC();rExec();rWOH();rRMD();rCP();rAX();rPurch();rPO();rBOM();rMO();checkChangelog();}
+function renderAll(){
+  if(!S.data)return;
+  // Build part_number -> description lookup before any getCat/catRM/isKanelProd calls
+  S._descMap={};
+  (S.data.inventory||[]).forEach(i=>{if(i.part_number)S._descMap[i.part_number]=i.description||i.part_number;});
+  S._abc=calcABC();
+  rExec();rWOH();rRMD();rCP();rAX();rPurch();rPO();rBOM();rMO();checkChangelog();
+}
 
 // ======== CHANGELOG / UPDATE LOG ========
 const CHANGELOG=[
@@ -2853,22 +2898,98 @@ async function saveConfig(){
   document.getElementById("app").classList.remove("hidden");
   refreshData();
 }
+// Default comp% rates for forecast auto-seed when no localStorage exists (month-keyed, used by autoSeedForecast only)
+const SEED_COMP_BY_MONTH={
+  'Jan':0.10,'Feb':0.10,'Mar':0.10,'Apr':0.10,'May':0.10,'Jun':0.10,
+  'Jul':0.10,'Aug':0.10,'Sep':0.15,'Oct':0.15,'Nov':0.15,'Dec':0.15
+};
+async function fetchWithRetry(url,maxRetries=2,delayMs=1500){
+  for(let attempt=0;attempt<=maxRetries;attempt++){
+    try{
+      const r=await fetch(url);
+      if(r.status===502&&attempt<maxRetries){await new Promise(res=>setTimeout(res,delayMs));continue;}
+      if(!r.ok)throw new Error(`HTTP ${r.status}`);
+      return await r.json();
+    }catch(e){
+      if(attempt===maxRetries)throw e;
+      await new Promise(res=>setTimeout(res,delayMs));
+    }
+  }
+}
+function autoSeedForecast(monthlySales){
+  // Only seed if no forecast exists yet (first load on a new machine)
+  if(!monthlySales||monthlySales.length===0)return;
+  if(S.forecast&&Object.keys(S.forecast).length>0){
+    // Migration check: if existing keys look like old product names (no SKU prefix like BLE-0001)
+    // force a re-seed so RM demand BOM matching works with new SKU keys
+    const keys=Object.keys(S.forecast);
+    const looksLikeSkus=keys.filter(k=>/^[A-Z]{2,3}-\d{4}/.test(k)).length;
+    if(looksLikeSkus/keys.length>0.5)return; // Already SKU-keyed, skip
+    console.log('[Hub] Forecast keys look like old product names, forcing re-seed from monthly_sales');
+    S.forecast={};S.fm={};S.mL=[];
+    try{localStorage.removeItem('kh-fc');localStorage.removeItem('kh-fm');localStorage.removeItem('kh-ml');}catch(e){}
+  }
+  // Build map: sku -> {month_label: qty} from monthly_sales
+  const bySkuMonth={};
+  monthlySales.forEach(r=>{
+    if(!r.sku)return;
+    if(!bySkuMonth[r.sku])bySkuMonth[r.sku]={};
+    bySkuMonth[r.sku][r.month_label]=r.qty||0;
+  });
+  // Get sorted unique months from data
+  const monthSet=new Set();monthlySales.forEach(r=>{if(r.month_label)monthSet.add(r.month_label);});
+  const months=Array.from(monthSet).sort();
+  // Use most recent 12 months as base, apply default comp%
+  const last12=months.slice(-12);
+  const annual={},monthly={};
+  Object.entries(bySkuMonth).forEach(([sku,mData])=>{
+    let yr=0;const mo=[];
+    last12.forEach(ml=>{
+      const base=mData[ml]||0;
+      const mKey=ml.substring(0,3);
+      const comp=SEED_COMP_BY_MONTH[mKey]||0.10;
+      const fct=Math.round(base*(1+comp));
+      yr+=fct;mo.push(fct);
+    });
+    if(yr>0){annual[sku]=yr;monthly[sku]=mo;}
+  });
+  if(Object.keys(annual).length===0)return;
+  S.forecast=annual;S.fm=monthly;
+  // Build mL from last12 shifted forward 12 months
+  S.mL=last12.map(ml=>{
+    const d=new Date(ml+' 1 2000');d.setFullYear(d.getFullYear()+1);
+    return d.toLocaleString('en-CA',{month:'short',year:'numeric'});
+  });
+  // Save to localStorage so subsequent loads skip the seed
+  try{
+    localStorage.setItem('kh-fc',JSON.stringify(annual));
+    localStorage.setItem('kh-fm',JSON.stringify(monthly));
+    localStorage.setItem('kh-ml',JSON.stringify(S.mL));
+  }catch(e){}
+  console.log(`[Hub] Forecast auto-seeded from monthly_sales: ${Object.keys(annual).length} SKUs, base months ${last12[0]} to ${last12[last12.length-1]}`);
+}
 async function refreshData(){
   const btn=document.getElementById('refreshBtn');btn.disabled=true;
   btn.innerHTML='<div class="loading-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div>Loading...';
+  const base='https://kanel-fishbowl-proxy.kanelhub.workers.dev';
   try{
-    const W='https://kanel-fishbowl-proxy.kanelhub.workers.dev';
-    const [rA,rB]=await Promise.all([fetch(`${W}?action=hub_woh_a`),fetch(`${W}?action=hub_woh_b`)]);
-    if(!rA.ok)throw new Error(`Batch A HTTP ${rA.status}`);
-    if(!rB.ok)throw new Error(`Batch B HTTP ${rB.status}`);
-    const [dA,dB]=await Promise.all([rA.json(),rB.json()]);
-    if(dA.error)throw new Error('Batch A: '+dA.detail);
-    if(dB.error)throw new Error('Batch B: '+dB.detail);
-    S.data=Object.assign({},dA,dB);
+    // Fire A and B in parallel; B may 502 on first try so retries are built in
+    const [dataA,dataB]=await Promise.all([
+      fetchWithRetry(`${base}?action=hub_woh_a`),
+      fetchWithRetry(`${base}?action=hub_woh_b`).catch(e=>{
+        console.warn('[Hub] hub_woh_b failed after retries:',e.message);
+        return {}; // Degrade gracefully -- hub_woh_a data still renders
+      })
+    ]);
+    S.data=Object.assign({},dataA,dataB);
+    // Auto-seed forecast if this machine has never uploaded one
+    autoSeedForecast(S.data.monthly_sales||[]);
     document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleString('en-CA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
     renderAll();
-  }catch(e){alert('Failed: '+e.message);}
-  btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>Refresh';}
+  }catch(e){alert('Failed to load hub data: '+e.message);}
+  btn.disabled=false;
+  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>Refresh';
+}
 function loadConfig(){
   S.config={url:"https://kanel-fishbowl-proxy.kanelhub.workers.dev",worker:true};
   try{
