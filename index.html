@@ -2856,8 +2856,15 @@ async function saveConfig(){
 async function refreshData(){
   const btn=document.getElementById('refreshBtn');btn.disabled=true;
   btn.innerHTML='<div class="loading-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div>Loading...';
-  try{const r=await fetch(`https://kanel-fishbowl-proxy.kanelhub.workers.dev?action=hub_woh`);if(!r.ok)throw new Error(`HTTP ${r.status}`);
-    S.data=await r.json();
+  try{
+    const W='https://kanel-fishbowl-proxy.kanelhub.workers.dev';
+    const [rA,rB]=await Promise.all([fetch(`${W}?action=hub_woh_a`),fetch(`${W}?action=hub_woh_b`)]);
+    if(!rA.ok)throw new Error(`Batch A HTTP ${rA.status}`);
+    if(!rB.ok)throw new Error(`Batch B HTTP ${rB.status}`);
+    const [dA,dB]=await Promise.all([rA.json(),rB.json()]);
+    if(dA.error)throw new Error('Batch A: '+dA.detail);
+    if(dB.error)throw new Error('Batch B: '+dB.detail);
+    S.data=Object.assign({},dA,dB);
     document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleString('en-CA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
     renderAll();
   }catch(e){alert('Failed: '+e.message);}
