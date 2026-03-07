@@ -2973,14 +2973,13 @@ async function refreshData(){
   btn.innerHTML='<div class="loading-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div>Loading...';
   const base='https://kanel-fishbowl-proxy.kanelhub.workers.dev';
   try{
-    // Fire A and B in parallel; B may 502 on first try so retries are built in
-    const [dataA,dataB]=await Promise.all([
-      fetchWithRetry(`${base}?action=hub_woh_a`),
-      fetchWithRetry(`${base}?action=hub_woh_b`).catch(e=>{
-        console.warn('[Hub] hub_woh_b failed after retries:',e.message);
-        return {}; // Degrade gracefully -- hub_woh_a data still renders
-      })
-    ]);
+    // Sequential fetch -- Fishbowl has a 3-session hard limit.
+    // Parallel requests burn 2 sessions at once and reliably 502 if any other session is open.
+    const dataA=await fetchWithRetry(`${base}?action=hub_woh_a`);
+    const dataB=await fetchWithRetry(`${base}?action=hub_woh_b`).catch(e=>{
+      console.warn('[Hub] hub_woh_b failed after retries:',e.message);
+      return {}; // Degrade gracefully -- hub_woh_a data still renders
+    });
     S.data=Object.assign({},dataA,dataB);
     // Auto-seed forecast if this machine has never uploaded one
     autoSeedForecast(S.data.monthly_sales||[]);
