@@ -90,7 +90,7 @@ select.hs{background:var(--surface-2);color:var(--text);border:1px solid var(--b
 </style>
 </head>
 <body>
-<div id="setupScreen" class="setup-screen">
+<div id="setupScreen" class="setup-screen hidden">
 <h2>Kanel Supply Chain Hub</h2>
 <p>Make sure the proxy is running.<br><code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:var(--mono)">node proxy.js</code></p>
 <label>Proxy URL</label>
@@ -1265,7 +1265,7 @@ async function createKPMOs(){
   let created=0,failed=0,errors=[];
   for(const r of items){
     try{
-      const resp=await fetch(`${S.config.url}/api/create-mo`,{method:'POST',headers:{'Content-Type':'application/json'},
+      const resp=await fetch(`https://kanel-fishbowl-proxy.kanelhub.workers.dev?action=hub_create_mo`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({bomId:bomMap[r.pn],bomName:r.pn,quantity:r.need,dateScheduled:sd,note:'Kanel Production - Created by Hub',location:'Main'})});
       const data=await resp.json();
       if(data.number){created++;console.log(`MO #${data.number} created for ${r.pn} x ${r.need}`);}
@@ -1423,7 +1423,7 @@ async function generateMOImport(){
   let created=0,failed=0,errors=[];
   for(const r of items){
     try{
-      const resp=await fetch(`${S.config.url}/api/create-mo`,{method:'POST',headers:{'Content-Type':'application/json'},
+      const resp=await fetch(`https://kanel-fishbowl-proxy.kanelhub.workers.dev?action=hub_create_mo`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({bomId:bomMap[r.pn],bomName:r.pn,quantity:r.moqQty,dateScheduled:sd,note:'Axia Production - Created by Kanel Hub',location:'AXIA'})});
       const data=await resp.json();
       if(data.number){created++;console.log(`MO #${data.number} created for ${r.pn} x ${r.moqQty}`);}
@@ -2310,7 +2310,7 @@ async function createPurchPO(){
       unitCost:r.costPerPurchUnit,uomId:r.purchUomId||1
     }));
     const vendorId=items[0].vendorId;
-    const resp=await fetch(`${S.config.url}/api/create-po`,{method:'POST',headers:{'Content-Type':'application/json'},
+    const resp=await fetch(`https://kanel-fishbowl-proxy.kanelhub.workers.dev?action=hub_create_po`,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({vendorId:vendorId,vendorName:vendor,items:poItems,note:'Created by Kanel Hub'})});
     const data=await resp.json();
     if(data.number){
@@ -2848,34 +2848,33 @@ function renderUpdateLog(){
 
 // ======== CONNECTION ========
 async function saveConfig(){
-  const url=document.getElementById('setupUrl').value.trim().replace(/\/$/,'');
-  const err=document.getElementById('setupError');if(!url){err.textContent='URL required';err.style.display='block';return;}
-  err.textContent='Connecting...';err.style.display='block';err.style.color='var(--text-muted)';
-  try{const r=await fetch(`${url}/api/health`);if(!r.ok)throw new Error(`HTTP ${r.status}`);
-    const d=await r.json();if(d.status!=='ok')throw new Error('Bad response');
-    S.config={url};localStorage.setItem('kh-cfg',JSON.stringify(S.config));
-    document.getElementById('setupScreen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');refreshData();
-  }catch(e){err.style.color='var(--red)';err.textContent=`Failed: ${e.message}. Is the proxy running?`;}}
+  S.config={url:"https://kanel-fishbowl-proxy.kanelhub.workers.dev",worker:true};
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  refreshData();
+}
 async function refreshData(){
   const btn=document.getElementById('refreshBtn');btn.disabled=true;
   btn.innerHTML='<div class="loading-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div>Loading...';
-  try{const r=await fetch(`${S.config.url}/api/woh`);if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  try{const r=await fetch(`https://kanel-fishbowl-proxy.kanelhub.workers.dev?action=hub_woh`);if(!r.ok)throw new Error(`HTTP ${r.status}`);
     S.data=await r.json();
     document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleString('en-CA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
     renderAll();
   }catch(e){alert('Failed: '+e.message);}
   btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>Refresh';}
 function loadConfig(){
-  const saved=localStorage.getItem('kh-cfg');
-  if(saved){try{S.config=JSON.parse(saved);
-    document.getElementById('setupScreen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');
-    const fc=localStorage.getItem('kh-fc');if(fc)S.forecast=JSON.parse(fc);
-    const fm=localStorage.getItem('kh-fm');if(fm)S.fm=JSON.parse(fm);
-    const ml=localStorage.getItem('kh-ml');if(ml)S.mL=JSON.parse(ml);
-    const ex=localStorage.getItem('kh-excl');if(ex)S.excluded=JSON.parse(ex);
-    const wex=localStorage.getItem('kh-woh-excl');if(wex)S.wohExcluded=JSON.parse(wex);
-    refreshData();
-  }catch(e){localStorage.removeItem('kh-cfg');}}}
+  S.config={url:"https://kanel-fishbowl-proxy.kanelhub.workers.dev",worker:true};
+  try{
+    const fc=localStorage.getItem("kh-fc");if(fc)S.forecast=JSON.parse(fc);
+    const fm=localStorage.getItem("kh-fm");if(fm)S.fm=JSON.parse(fm);
+    const ml=localStorage.getItem("kh-ml");if(ml)S.mL=JSON.parse(ml);
+    const ex=localStorage.getItem("kh-excl");if(ex)S.excluded=JSON.parse(ex);
+    const wex=localStorage.getItem("kh-woh-excl");if(wex)S.wohExcluded=JSON.parse(wex);
+  }catch(e){}
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  refreshData();
+}
 loadConfig();
 </script>
 </body></html>
