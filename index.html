@@ -109,7 +109,7 @@ select.hs{background:var(--surface-2);color:var(--text);border:1px solid var(--b
 </div></div>
 
 <div class="nav">
-<div class="nav-tab active" data-tab="exec" onclick="switchTab('exec')">Executive Summary</div>
+<div class="nav-tab active" data-tab="wip-forecast" onclick="switchTab('wip-forecast')">Forecast Hub</div>
 <div class="nav-tab" data-tab="woh" onclick="switchTab('woh')">Weeks on Hand</div>
 <div class="nav-tab" data-tab="rmdemand" onclick="switchTab('rmdemand')">RM Demand</div>
 <div class="nav-tab" data-tab="casepack" onclick="switchTab('casepack')">Kanel Production</div>
@@ -122,16 +122,13 @@ select.hs{background:var(--surface-2);color:var(--text);border:1px solid var(--b
 <div class="nav-tab" data-tab="updates" onclick="switchTab('updates')">Updates</div>
 <div class="nav-tab" data-tab="guide" onclick="switchTab('guide')">How It Works</div>
 <div style="display:inline-block;width:2px;height:28px;background:var(--accent);margin:0 12px;vertical-align:middle"></div>
-<span style="font-size:10px;color:var(--accent);font-weight:700;letter-spacing:1px;vertical-align:middle">WIP - DO NOT USE</span>
+<span style="font-size:10px;color:var(--accent);font-weight:700;letter-spacing:1px;vertical-align:middle">WIP</span>
 <div class="nav-tab" data-tab="wip-safety" onclick="switchTab('wip-safety')" style="opacity:0.5;font-style:italic;border:1px dashed var(--border);border-radius:6px;margin:0 2px">Safety Stock</div>
-<div class="nav-tab" data-tab="wip-calendar" onclick="switchTab('wip-calendar')" style="opacity:0.5;font-style:italic;border:1px dashed var(--border);border-radius:6px;margin:0 2px">Prod Calendar</div>
-<div class="nav-tab" data-tab="wip-forecast" onclick="switchTab('wip-forecast')">Forecast Hub</div>
 </div>
 
 <div class="main">
-<!-- WOH (FG only) -->
-<!-- EXECUTIVE SUMMARY -->
-<div id="tab-exec" class="tab-content">
+<!-- EXECUTIVE SUMMARY (removed Mar 2026) -->
+<div id="tab-exec" class="tab-content hidden">
 <div class="cards" id="execCards"></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
 <div id="execActions" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px"></div>
@@ -144,19 +141,8 @@ select.hs{background:var(--surface-2);color:var(--text);border:1px solid var(--b
 </div>
 
 <div id="tab-woh" class="tab-content hidden"><div class="cards" id="wohCards"></div><div class="filters" id="wohFilters"></div>
-<div class="export-bar"><span class="result-count" id="wohCount"></span><div class="xport-wrap"><button class="export-btn" onclick="toggleXportMenu(this)">Export &#9662;</button><div class="xport-menu"><button onclick="xport('woh','xlsx',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Download Excel</button><button onclick="xport('woh','gdrive',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Save to Google Drive</button></div></div><button class="export-btn" onclick="toggleWohManage()" style="margin-left:8px">Manage WOH Items</button></div>
-<div id="wohManagePanel" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-<div style="font-size:14px;font-weight:600;color:var(--accent)">Manage WOH Items</div>
-<div style="display:flex;gap:8px">
-<input type="text" class="search-input" placeholder="Search..." oninput="rWohManage(this.value)" style="width:200px" id="wohManageSearch">
-<select class="hs" id="wohManageFilter" onchange="rWohManage()"><option value="all">All FG</option><option value="shown">Shown on WOH</option><option value="hidden">Hidden from WOH</option></select>
-<button class="export-btn" onclick="toggleWohManage()">Close</button>
-</div></div>
-<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">Uncheck items to hide them from WOH. This only affects the WOH tab, not RM Demand or other calculations.</div>
-<div style="max-height:400px;overflow-y:auto"><table style="width:100%"><thead><tr><th style="width:30px"></th><th>Product</th><th>Category</th><th>OH</th><th>Case Pack?</th></tr></thead><tbody id="wohManageBody"></tbody></table></div>
-<div style="margin-top:8px;font-size:11px;color:var(--text-muted)" id="wohManageCount"></div>
-</div>
+<div class="export-bar"><span class="result-count" id="wohCount"></span><div class="xport-wrap"><button class="export-btn" onclick="toggleXportMenu(this)">Export &#9662;</button><div class="xport-menu"><button onclick="xport('woh','xlsx',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Download Excel</button><button onclick="xport('woh','gdrive',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Save to Google Drive</button></div></div></div>
+<div id="wohCatFilters" style="margin:6px 0 8px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-wrap:wrap;gap:10px;align-items:center"><span style="font-size:11px;color:var(--text-muted);margin-right:2px">Show:</span></div>
 <div class="table-wrap"><div class="table-scroll"><table><thead><tr>
 <th onclick="srt('woh','pn')">SKU</th><th onclick="srt('woh','desc')">Description</th><th onclick="srt('woh','abc')">ABC</th><th onclick="srt('woh','cat')">Category</th><th onclick="srt('woh','oh')">On Hand</th><th onclick="srt('woh','cm')">Committed</th><th onclick="srt('woh','av')">Available</th><th onclick="srt('woh','wf')">Wkly Fcst</th><th onclick="srt('woh','doh')">DOH</th><th onclick="srt('woh','woh')">WOH</th><th onclick="srt('woh','moh')">MOH</th><th>Bar</th><th onclick="srt('woh','replen')">Replen Date</th><th onclick="srt('woh','replenFlag')">Replen Status</th><th onclick="srt('woh','st')">Status</th>
 </tr></thead><tbody id="wohBody"></tbody></table></div></div></div>
@@ -295,7 +281,7 @@ select.hs{background:var(--surface-2);color:var(--text);border:1px solid var(--b
 </div>
 
 <!-- FORECAST HUB -->
-<div id="tab-wip-forecast" class="tab-content hidden">
+<div id="tab-wip-forecast" class="tab-content">
 <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
 <button class="export-btn" onclick="saveFctComp()">Save Comp%</button>
 <button class="export-btn" onclick="resetFctComp()">Reset to Defaults</button>
@@ -345,7 +331,7 @@ select.hs{background:var(--surface-2);color:var(--text);border:1px solid var(--b
 <div class="filters"><input type="text" class="search-input" placeholder="Search BOMs..." oninput="S.bomQ=this.value;rBOM()"></div>
 <div class="export-bar"><span class="result-count" id="bomCount"></span><div class="xport-wrap"><button class="export-btn" onclick="toggleXportMenu(this)">Export &#9662;</button><div class="xport-menu"><button onclick="xport('boms','xlsx',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Download Excel</button><button onclick="xport('boms','gdrive',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Save to Google Drive</button></div></div></div>
 <div class="table-wrap"><div class="table-scroll"><table><thead><tr>
-<th onclick="srt('boms','fg')">Finished Good</th><th onclick="srt('boms','cp')">Component</th><th>Qty Per</th><th>UOM</th>
+<th onclick="srt('boms','fg')">Finished Good</th><th>FG Description</th><th onclick="srt('boms','cp')">Component</th><th>Component Description</th><th>Qty Per</th><th>UOM</th>
 </tr></thead><tbody id="bomBody"></tbody></table></div></div></div>
 
 <!-- MANAGE ITEMS -->
@@ -593,8 +579,19 @@ const DISCONTINUED=['Golden Lemon Turmeric','Summer Sea Salt'];
 // These are items where WOH isn't meaningful (gifts, collections sold as bundles)
 const WOH_EXCLUDE=['Bulk - Aglio Napoletano','Bulk - Charred Lemon Sea Salt','Bulk - Lemon Blueberry Bombshell','Bulk - Midnight Maple','Bulk - Midnight Umami','Bulk - Quebec Maple Smoked Salt','Bulk - Salt + Chili Margarita','Bulk - Sour Cherry','Bulk - The Ultimate Caesar','Hygge - 20g','Midnight Umami','Organic Louisiana Fried Chicken - 1kg','Peppercorn Samplers','Sample MainStreet_Organic La Vita E Bella','Sample MainStreet_Organic Spicy Chili Crunch','Sparkle & Spice','Spicy Jalapeno & Lime - 500g','The Summer Edit','The Ultimate Caesar - 500g'];
 
+// WOH Category filter prefixes
+const WOH_CATS=[
+  {prefix:'BLE',label:'Spice Blends'},{prefix:'SAL',label:'Sea Salts'},{prefix:'RIM',label:'Rimmers'},
+  {prefix:'REF',label:'Refills'},{prefix:'GIF',label:'Gifts'},{prefix:'COL',label:'Collections'},
+  {prefix:'PRO',label:'Promotions'},{prefix:'BYO',label:'BYO'},{prefix:'PKG',label:'Case Packs'},
+  {prefix:'MAR',label:'Marketing'},{prefix:'SHE',label:'Shelf'},{prefix:'POP',label:'POS'},{prefix:'DEM',label:'Demo'},
+];
+function loadWohCats(){try{const s=localStorage.getItem('kh-woh-cats');return s?JSON.parse(s):null;}catch{return null;}}
+function saveWohCats(){localStorage.setItem('kh-woh-cats',JSON.stringify(S.wohCats));}
+function initWohCats(){const saved=loadWohCats();S.wohCats={};WOH_CATS.forEach(c=>{S.wohCats[c.prefix]=saved?saved[c.prefix]!==false:true;});}
+
 // ======== STATE ========
-let S={config:null,data:null,forecast:{},fm:{},mL:[],excluded:{},wohExcluded:{},wohFilter:'all',wohSearch:'',rmQ:'',rmCat:'all',poQ:'',bomQ:'',cpQ:'',axQ:'',
+let S={config:null,data:null,forecast:{},fm:{},mL:[],excluded:{},wohExcluded:{},wohCats:{},wohFilter:'all',wohSearch:'',rmQ:'',rmCat:'all',poQ:'',bomQ:'',cpQ:'',axQ:'',
   sortC:{},sortD:{},axiaBM:3,cpBM:1,cpSel:null,cpMoSel:{},axSel:{},moQ:'',moStatusF:'all',moLocF:'all',purchQ:'',ssQ:'',ssFilter:'all',_c:{}};
 
 // ======== UTILS ========
@@ -607,89 +604,27 @@ function toKg(q,u){const l=(u||'').toLowerCase();if(l==='gram'||l==='g')return q
 function isWt(u){return['gram','g','kilogram','kg','454g bag','5kg bag'].includes((u||'').toLowerCase());}
 function dU(u){return isWt(u)?'kg':u;}
 function inc(n){return!S.excluded[n]&&!DISCONTINUED.includes(n);}
-function incWOH(n){if(S.excluded[n])return false;if(S.wohExcluded[n])return false;if(WOH_EXCLUDE.includes(n))return false;if(/^BLK-/i.test(n))return false;if(/^Bulk /i.test(n))return false;const desc=(S._descMap&&S._descMap[n])||'';if(/^Bulk /i.test(desc))return false;return true;}
+function incWOH(n){if(S.excluded[n])return false;if(/^BLK-/i.test(n))return false;if(/^Bulk /i.test(n))return false;return true;}
 function isDisc(n){return DISCONTINUED.includes(n);}
 
 // WOH Manage Items (WOH-specific, does NOT affect RM Demand or other tabs)
-function toggleWohManage(){
-  const p=document.getElementById('wohManagePanel');
-  p.style.display=p.style.display==='none'?'block':'none';
-  if(p.style.display==='block')rWohManage();
-}
-function rWohManage(searchOverride){
-  const inv=S.data?S.data.inventory||[]:[];
-  const q=searchOverride!==undefined?searchOverride:(document.getElementById('wohManageSearch')||{}).value||'';
-  const f=(document.getElementById('wohManageFilter')||{}).value||'all';
-  // Only show FG items (not RM, not Bulk, not Kanel Prod)
-  let d=inv.filter(i=>{if(i.item_class!=='FG')return false;if(isKanelProd(i.part_number))return false;if(/^BLK-/i.test(i.part_number))return false;if(/^Bulk /i.test(i.part_number))return false;const desc=(S._descMap&&S._descMap[i.part_number])||i.description||'';if(/^Bulk /i.test(desc))return false;return true;});
-  if(q)d=d.filter(r=>{const desc=(S._descMap&&S._descMap[r.part_number])||r.description||'';return r.part_number.toLowerCase().includes(q.toLowerCase())||desc.toLowerCase().includes(q.toLowerCase());});
-  if(f==='shown')d=d.filter(r=>!S.wohExcluded[r.part_number]&&!WOH_EXCLUDE.includes(r.part_number)&&!S.excluded[r.part_number]);
-  else if(f==='hidden')d=d.filter(r=>S.wohExcluded[r.part_number]||WOH_EXCLUDE.includes(r.part_number)||S.excluded[r.part_number]);
-  d.sort((a,b)=>a.part_number.localeCompare(b.part_number));
-  const cpRe=/Case Pack\s*\(\d+\)/i;
-  const hiddenCount=inv.filter(i=>i.item_class==='FG'&&(S.wohExcluded[i.part_number]||WOH_EXCLUDE.includes(i.part_number))).length;
-  document.getElementById('wohManageCount').textContent=`${d.length} items shown | ${hiddenCount} hidden from WOH`;
-  document.getElementById('wohManageBody').innerHTML=d.map(r=>{
-    const hardExcl=WOH_EXCLUDE.includes(r.part_number);
-    const softExcl=S.wohExcluded[r.part_number];
-    const globalExcl=S.excluded[r.part_number];
-    const isHidden=hardExcl||softExcl||globalExcl;
-    const isCp=cpRe.test(r.part_number);
-    const disabled=hardExcl?'disabled title="Hardcoded exclude"':'';
-    return`<tr style="${isHidden?'opacity:0.5':''}">
-      <td><input type="checkbox" ${!isHidden?'checked':''} ${disabled} onchange="toggleWohItem('${r.part_number.replace(/'/g,"\\'")}',this.checked)"></td>
-      <td style="font-size:12px">${r.part_number}</td>
-      <td style="font-size:11px;color:var(--text-muted)">${getCat(r.part_number)}</td>
-      <td class="num" style="font-size:11px">${fmt(r.on_hand_qty)}</td>
-      <td style="font-size:11px;color:${isCp?'var(--accent)':'var(--text-muted)'}">${isCp?'Yes':''}</td></tr>`;
-  }).join('');
-}
-function toggleWohItem(pn,show){
-  if(show)delete S.wohExcluded[pn]; else S.wohExcluded[pn]=true;
-  localStorage.setItem('kh-woh-excl',JSON.stringify(S.wohExcluded));
-  rWohManage();rWOH();
-}
 function getCat(n){
-  if(!n)return'Other';
-  // Primary: SKU prefix (post-migration standard)
-  const pfx=n.substring(0,3).toUpperCase();
-  if(pfx==='BLE')return'Spice Blend';
-  if(pfx==='SAL')return'Sea Salt';
-  if(pfx==='RIM')return'Cocktail Rimmer';
-  if(pfx==='REF')return'Refill';
-  if(pfx==='GIF')return'Gift';
-  if(pfx==='COL')return'Collection';
-  if(pfx==='PRO')return'Promotion';
-  if(pfx==='BYO')return'Build Your Own';
-  if(pfx==='MAR'||pfx==='SHE'||pfx==='POP'||pfx==='DEM')return'Marketing';
-  // Fallback: description-based for any legacy / unmapped parts
-  const desc=(S._descMap&&S._descMap[n])||n;
-  const l=desc.toLowerCase();
-  if(l.includes('rimmer')||l.includes('caesar')&&!l.includes('bulk')||l.includes('margarita')&&!l.includes('bulk')||l.includes('bombshell')&&!l.includes('bulk')||l.includes('spritz')&&!l.includes('bulk')||l.includes('gingerbread')&&!l.includes('bulk')||l.includes('peppermint')&&!l.includes('bulk')||l.includes('sour cherry')&&!l.includes('bulk')||l.includes('holiday cocktail'))return'Cocktail Rimmer';
-  if(l.includes('refill bag'))return'Refill';
-  if(l.includes('case pack'))return'Case Pack';
-  if(l.includes('collection')||l.includes('trio')||l.includes('gift')||l.includes('bonjour')||l.includes('traveler'))return'Gift';
+  const l=n.toLowerCase();
+  if(l.includes('rimmer')||l.includes('caesar')&&!l.includes('bulk')&&!l.includes('label')&&!l.includes('tin')||l.includes('margarita')&&!l.includes('bulk')&&!l.includes('label')&&!l.includes('tin')||l.includes('bombshell')&&!l.includes('bulk')||l.includes('spritz')&&!l.includes('bulk')||l.includes('gingerbread')&&!l.includes('bulk')||l.includes('peppermint')&&!l.includes('bulk')||l.includes('sour cherry')&&!l.includes('bulk')||l.includes('holiday cocktail'))return'Cocktail Rimmer';
+  if(l.includes('refill bag'))return'Refill';if(l.includes('case pack'))return'Case Pack';
+  if(l.includes('collection')||l.includes('duo')&&!l.includes('sleeve')||l.includes('trio')||l.includes('gift')||l.includes('bonjour')||l.includes('traveler')||l.includes('edit ')&&!l.includes('salt')||l.includes('bright &')||l.includes('bring the'))return'Gift';
   if(l.includes(' salt')||l.includes('fleur de sel')||l.includes('pearl')||l.includes('flake salt')||l.includes('peppercorn')&&!l.includes('bulk'))return'Sea Salt';
   return'Spice Blend';
 }
 function catRM(n){
-  // Use description if available (RM parts are now SKUs like PKG-0001)
-  const desc=(S._descMap&&S._descMap[n])||n;
-  const l=desc.toLowerCase();
-  const pn=n.toLowerCase();
-  if(l.startsWith('bulk')||pn.startsWith('blk-'))return'Bulk Ingredients';
-  if(l.startsWith('label')||l.includes('round label')||pn.startsWith('lbl-'))return'Labels';
-  if(l.includes('tube')||pn.startsWith('tub-'))return'Tubes';
-  if(l.includes('bag')||l.includes('pouch')||l.includes('compostable')||pn.startsWith('bag-'))return'Bags & Pouches';
-  if(l.startsWith('box')||l.includes('insert')||l.includes('sleeve')||pn.startsWith('box-'))return'Boxes & Inserts';
-  if(l.includes('jar')||l.includes('lid')||l.includes('glass')||pn.startsWith('jar-'))return'Jars & Lids';
-  if(l.includes('tin')||l.startsWith('rm-rimmer'))return'Tins';
-  if(l.includes('case pack'))return'Case Pack Boxes';
-  return'Other Components';
+  const l=n.toLowerCase();if(l.startsWith('bulk'))return'Bulk Ingredients';if(l.startsWith('label')||l.includes('round label'))return'Labels';
+  if(l.includes('tube'))return'Tubes';if(l.includes('bag')||l.includes('pouch')||l.includes('compostable'))return'Bags & Pouches';
+  if(l.startsWith('box')||l.includes('insert')||l.includes('sleeve'))return'Boxes & Inserts';if(l.includes('jar')||l.includes('lid')||l.includes('glass'))return'Jars & Lids';
+  if(l.includes('tin')||l.startsWith('rm-rimmer'))return'Tins';if(l.includes('case pack'))return'Case Pack Boxes';return'Other Components';
 }
 
 // ======== NAV / SORT ========
-function switchTab(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden'));document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));document.getElementById('tab-'+t).classList.remove('hidden');document.querySelector(`.nav-tab[data-tab="${t}"]`).classList.add('active');if(t==='exec')rExec();if(t==='manage')rManage();if(t==='mos')rMO();if(t==='wip-safety')rSS();if(t==='wip-calendar')rCal();if(t==='wip-forecast')rWipFct();}
+function switchTab(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden'));document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));document.getElementById('tab-'+t).classList.remove('hidden');const nt=document.querySelector(`.nav-tab[data-tab="${t}"]`);if(nt)nt.classList.add('active');if(t==='manage')rManage();if(t==='mos')rMO();if(t==='wip-safety')rSS();if(t==='wip-forecast')rWipFct();}
 function switchMOSub(s){document.querySelectorAll('#tab-mos .sub-tab').forEach(e=>e.classList.remove('active'));document.querySelector(`.sub-tab[data-sub="${s}"]`).classList.add('active');['open','rmreq','schedule','closed'].forEach(id=>{document.getElementById('mo-'+id).classList.toggle('hidden',id!==s);});}
 function srt(tab,col){if(S.sortC[tab]===col)S.sortD[tab]=S.sortD[tab]==='a'?'d':'a';else{S.sortC[tab]=col;S.sortD[tab]='a';}const dir=S.sortD[tab]==='a'?1:-1;const d=S._c[tab+'F']||[];d.sort((a,b)=>{let va=a[col],vb=b[col];if(va==null)return 1;if(vb==null)return-1;if(typeof va==='string')return va.localeCompare(vb)*dir;return(va-vb)*dir;});const rn={woh:rWOHT,rmdemand:rRMDT,casepack:rCPT,axia:rAXT,boms:rBOMT,pos:rPOT,morm:rMORM_T};if(rn[tab])rn[tab](d);}
 
@@ -729,39 +664,20 @@ function showFU(){
     for(let i=0;i<Math.min(10,rows.length);i++){if(rows[i]&&rows[i].length>8){let mc=0;for(let c=5;c<rows[i].length;c++){if(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i.test(String(rows[i][c]||'')))mc++;}if(mc>=2){hdr=i;break;}}}
     if(hdr>=0){
       for(let c=6;c<=18&&c<rows[hdr].length;c++){const l=String(rows[hdr][c]).trim();if(l&&/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i.test(l))ml.push(l);}
-      const inv=(S.data&&S.data.inventory)||[];
-      const pnSet=new Set(inv.map(i=>i.part_number));
+      const inv=(S.data&&S.data.inventory)||[];const pn=inv.map(i=>i.part_number);
       let matched=0,total=0;
-      // Find nameCol: look for a column header row near hdr with "sku" or "part" label,
-      // or detect by checking which column has SKU-pattern values (e.g. BLE-0001, RIM-0002)
+      const corr={"Bonjour, Hi.":"Bonjour, Hi","Spice Traveler":"Spice traveler","epices a Rosbif":"epices a rosbif","Mineral - Pure - Salt Collection":"Mineral: Pure - Salt Collection","The Sapio Collection":"Sapio"};
       let nameCol=0,dataStart=hdr+1;
-      const SKU_RE=/^[A-Z]{2,4}-\d{3,}/;
-      for(let i=hdr+1;i<Math.min(hdr+8,rows.length);i++){
-        const r=rows[i];if(!r)continue;
-        const c0=String(r[0]||'').trim().toLowerCase();
-        if(!c0||c0==='fct'||c0==='category'||c0==='month')continue;
-        // Check if col 1 looks like a SKU -- preferred key post-migration
-        if(r[1]&&SKU_RE.test(String(r[1]).trim())){nameCol=1;}
-        // Also scan for a header row between hdr and this data row that says "sku" in some column
-        else{
-          for(let hi=hdr+1;hi<i;hi++){
-            const hr=rows[hi];if(!hr)continue;
-            for(let c=0;c<6;c++){const h=String(hr[c]||'').trim().toLowerCase();if(h==='sku'||h==='part_number'||h==='part number'){nameCol=c;break;}}
-          }
-          // Fallback: col 3 if it has content (old behaviour)
-          if(nameCol===0&&r[3]&&String(r[3]).trim().length>2)nameCol=3;
-        }
-        dataStart=i;break;
-      }
+      for(let i=hdr+1;i<Math.min(hdr+8,rows.length);i++){const r=rows[i];if(!r)continue;const c0=String(r[0]||'').trim().toLowerCase();if(!c0||c0==='fct'||c0==='category'||c0==='month')continue;if(r[3]&&String(r[3]).trim().length>2){nameCol=3;}dataStart=i;break;}
       for(let i=dataStart;i<rows.length;i++){
-        const r=rows[i];if(!r)continue;const name=String(r[nameCol]||'').trim();if(!name||name==='None'||name.toLowerCase()==='category')continue;total++;
-        // Exact match only -- post-migration all keys are clean SKUs
-        const matched_pn=pnSet.has(name);
-        const key=name;let yr=0;const mo=[];
+        const r=rows[i];if(!r)continue;let name=String(r[nameCol]||'').trim();if(!name||name==='None'||name.toLowerCase()==='category')continue;total++;
+        let mn=pn.find(p=>p===name)||pn.find(p=>p.toLowerCase()===name.toLowerCase())||pn.find(p=>p.replace(/\s+/g,' ').toLowerCase()===name.replace(/\s+/g,' ').toLowerCase());
+        if(!mn&&corr[name])mn=pn.find(p=>p===corr[name]);
+        const key=mn||name;let yr=0;const mo=[];
         for(let c=6;c<=18&&c<r.length;c++){const v=parseFloat(r[c])||0;yr+=v;mo.push(v);}
-        if(yr>0){annual[key]=(annual[key]||0)+yr;monthly[key]=(monthly[key]||[]).length?monthly[key].map((v,i)=>v+(mo[i]||0)):mo;if(matched_pn)matched++;}
+        if(yr>0){annual[key]=(annual[key]||0)+yr;monthly[key]=(monthly[key]||[]).length?monthly[key].map((v,i)=>v+(mo[i]||0)):mo;if(mn)matched++;}
       }
-      S.mL=ml;alert(`Forecast loaded: ${matched}/${total} SKUs matched to Fishbowl parts, ${ml.length} months (${ml[0]} to ${ml[ml.length-1]})`);
+      S.mL=ml;alert(`Forecast loaded: ${matched}/${total} SKUs matched, ${ml.length} months (${ml[0]} to ${ml[ml.length-1]})`);
     }
     S.forecast=annual;S.fm=monthly;
     localStorage.setItem('kh-fc',JSON.stringify(annual));localStorage.setItem('kh-fm',JSON.stringify(monthly));localStorage.setItem('kh-ml',JSON.stringify(ml));
@@ -968,10 +884,10 @@ function calcWOH(){
       if(stockoutDate&&replen){const rd=new Date(fixTZ(replen));replenFlag=rd<=stockoutDate?'on-time':'late';}
       else if(replen)replenFlag='on-time';
     }else if(st==='oos'||st==='critical'||st==='atrisk'){replenFlag='none';}
-    return{pn:item.part_number,desc:(S._descMap&&S._descMap[item.part_number])||'',cat:getCat(item.part_number),oh,cm,av,wf:wf?Math.round(wf*10)/10:null,doh,woh:woh!==null?Math.round(woh*10)/10:null,moh,st,replen,replenQty,replenFlag,stockoutDate};
+    return{pn:item.part_number,desc:S._descMap[item.part_number]||'',cat:getCat(item.part_number),oh,cm,av,wf:wf?Math.round(wf*10)/10:null,doh,woh:woh!==null?Math.round(woh*10)/10:null,moh,st,replen,replenQty,replenFlag,stockoutDate};
   });
   disc.forEach(item=>{
-    results.push({pn:item.part_number,desc:(S._descMap&&S._descMap[item.part_number])||'',cat:getCat(item.part_number),oh:item.on_hand_qty,cm:item.committed_qty||0,av:item.available_qty!==undefined?item.available_qty:item.on_hand_qty,wf:null,doh:null,woh:null,moh:null,st:'disc',replen:null,replenQty:0,replenFlag:null,stockoutDate:null});
+    results.push({pn:item.part_number,desc:S._descMap[item.part_number]||'',cat:getCat(item.part_number),oh:item.on_hand_qty,cm:item.committed_qty||0,av:item.available_qty!==undefined?item.available_qty:item.on_hand_qty,wf:null,doh:null,woh:null,moh:null,st:'disc',replen:null,replenQty:0,replenFlag:null,stockoutDate:null});
   });
   return results;
 }
@@ -997,18 +913,26 @@ function rWOH(){
     ${c.disc>0?'<button class="filter-btn '+(S.wohFilter==='disc'?'active':'')+'" onclick="S.wohFilter=\'disc\';rWOHT()" style="border-color:var(--text-muted)">Discontinued<span class="count">'+c.disc+'</span><span class="tip">Needs offboarding</span></button>':''}
     <input type="text" class="search-input" placeholder="Search..." oninput="S.wohSearch=this.value;rWOHT()" value="${S.wohSearch}">
     ${!hf?'<button class="filter-btn" style="border-color:var(--accent);color:var(--accent)" onclick="showFU()">+ Upload Forecast</button>':'<button class="filter-btn" onclick="showFU()">Update Forecast</button>'}`;
+  // Category checkboxes
+  const cats=WOH_CATS.filter(c=>d.some(r=>r.pn.startsWith(c.prefix+'-')));
+  document.getElementById('wohCatFilters').innerHTML=`<span style="font-size:11px;color:var(--text-muted);margin-right:2px">Show:</span>`+
+    cats.map(c=>`<label style="font-size:12px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:4px"><input type="checkbox" ${S.wohCats[c.prefix]!==false?'checked':''} onchange="S.wohCats['${c.prefix}']=this.checked;saveWohCats();rWOHT()"><span>${c.prefix}</span><span style="font-size:10px;color:var(--text-muted)">${c.label}</span></label>`).join('')+
+    `<button class="filter-btn" style="margin-left:auto;font-size:11px" onclick="WOH_CATS.forEach(c=>{S.wohCats[c.prefix]=true;});saveWohCats();rWOHT();rWOH()">All On</button>`;
   rWOHT();
 }
 function rWOHT(d){
-  if(!d){d=S._c.woh||[];if(S.wohFilter!=='all')d=d.filter(r=>r.st===S.wohFilter);if(S.wohSearch){const q=S.wohSearch.toLowerCase();d=d.filter(r=>r.pn.toLowerCase().includes(q)||(r.desc||'').toLowerCase().includes(q));}}
+  if(!d){d=S._c.woh||[];if(S.wohFilter!=='all')d=d.filter(r=>r.st===S.wohFilter);if(S.wohSearch){const q=S.wohSearch.toLowerCase();d=d.filter(r=>r.pn.toLowerCase().includes(q)||(r.desc||'').toLowerCase().includes(q));}
+  // Category filter
+  const activeCats=new Set(WOH_CATS.filter(c=>S.wohCats[c.prefix]!==false).map(c=>c.prefix));
+  d=d.filter(r=>{const pre=r.pn.split('-')[0];return activeCats.has(pre)||!WOH_CATS.some(c=>c.prefix===pre);});}
   S._c.wohF=d;document.getElementById('wohCount').textContent=`${d.length} items`;
   document.getElementById('wohBody').innerHTML=d.map(r=>{const bw=r.woh!==null?Math.min(100,r.woh/30*100):0;
     const repTxt=r.replen?`<span style="color:var(--green)">${fmtDate(fixTZ(r.replen))}</span><br><span style="font-size:10px;color:var(--text-muted)">${fmt(r.replenQty)} units</span>`:'<span style="color:var(--text-muted)">None</span>';
     const flagMap={'on-time':'<span class="badge badge-healthy">ON TIME</span>','late':'<span class="badge badge-critical">LATE</span>','none':'<span class="badge badge-oos">NO MO</span>'};
     const flagTxt=flagMap[r.replenFlag]||'<span style="color:var(--text-muted)">--</span>';
     const abcG=getABC(r.pn);const abcClr=abcG.grade==='A'?'var(--green)':abcG.grade==='B'?'var(--orange)':'var(--text-muted)';
-    return`<tr><td style="font-family:var(--mono);font-size:11px">${r.pn}</td><td style="font-size:12px">${r.desc||''}</td><td style="text-align:center;font-weight:700;color:${abcClr}">${abcG.grade}</td><td style="font-size:12px;color:var(--text-muted)">${r.cat}</td>
-    <td class="num">${fmt(r.oh)}</td><td class="num" style="color:${r.cm>0?'var(--orange)':'var(--text-muted)'}">${fmt(r.cm)}</td>
+    return`<tr><td style="font-family:var(--mono);font-size:12px">${r.pn}</td><td style="font-size:12px;color:var(--text-muted)">${r.desc||''}</td><td style="text-align:center;font-weight:700;color:${abcClr}">${abcG.grade}</td><td style="font-size:12px;color:var(--text-muted)">${r.cat}</td>
+    <td class="num">${fmt(r.oh)}</td><td class="num" style="color:${r.cm>0?'var(--orange)':'var(--text-muted)'}"> ${fmt(r.cm)}</td>
     <td class="num" style="font-weight:600">${fmt(r.av)}</td><td class="num">${r.wf!==null?fmt(r.wf,1):'--'}</td>
     <td class="num" style="color:var(--text-muted)">${r.doh!==null?fmt(r.doh):'--'}</td>
     <td class="num" style="font-weight:600">${r.woh!==null?fmt(r.woh,1):'--'}</td>
@@ -1142,7 +1066,7 @@ function rRMD(){
     <div class="card"><div class="card-label">Critical (&lt;1mo)</div><div class="card-value red">${c.critical}</div></div>
     <div class="card"><div class="card-label">At Risk (1-3mo)</div><div class="card-value orange">${c.atrisk}</div></div>
     <div style="flex:1;display:flex;align-items:center;justify-content:flex-end"><span style="font-size:11px;color:var(--text-muted);background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.25);border-radius:6px;padding:4px 10px">Includes volumes for Purity, Sobeys CA and QC, and holiday SKUs</span></div>`;
-  document.getElementById('rmdemandHead').innerHTML=`<tr><th onclick="srt('rmdemand','cp')">Material</th><th>Cat</th><th>UOM</th>
+  document.getElementById('rmdemandHead').innerHTML=`<tr><th onclick="srt('rmdemand','cp')">Material</th><th>Description</th><th>Cat</th><th>UOM</th>
     <th onclick="srt('rmdemand','oh')">OH</th><th>Cmtd</th><th onclick="srt('rmdemand','av')">Avail</th><th onclick="srt('rmdemand','po')">Open PO</th>
     ${ml.map(m=>`<th style="font-size:10px" title="Ending Inventory">${m.substring(0,3)}</th>`).join('')}
     <th onclick="srt('rmdemand','annual')">Annual</th><th onclick="srt('rmdemand','net')">Net Need</th><th onclick="srt('rmdemand','mos')">MOS</th><th>Status</th></tr>`;
@@ -1154,7 +1078,7 @@ function rRMDT(d){if(!d)d=S._c.rmdemandF||[];document.getElementById('rmdemandCo
       const clr=v<=0?'var(--red)':v<r.md?'var(--orange)':'var(--text-muted)';
       return`<td class="num" style="font-size:10px;color:${clr}">${fmt(Math.round(v))}</td>`;
     }).join('');
-    return`<tr><td>${r.cp}</td><td style="font-size:11px;color:var(--text-muted)">${r.rmCat}</td><td>${r.uom}</td>
+    return`<tr><td style="font-family:var(--mono);font-size:12px">${r.cp}</td><td style="font-size:11px;color:var(--text-muted)">${S._descMap[r.cp]||''}</td><td style="font-size:11px;color:var(--text-muted)">${r.rmCat}</td><td>${r.uom}</td>
     <td class="num">${fmt(r.oh,1)}</td>
     <td class="num" style="color:${r.cm>0?'var(--orange)':'var(--text-muted)'}; font-size:11px">${fmt(r.cm,1)}</td>
     <td class="num" style="font-weight:600">${fmt(r.av,1)}</td>
@@ -1171,12 +1095,16 @@ function showBOMGaps(){
   const bomDates={};bomIds.forEach(b=>{bomDates[b.name]=b.date_created;});
   // Last produced dates
   const lpMap={};lp.forEach(l=>{lpMap[l.part_number]=l.last_produced;});
-  // Active FG BOMs with no forecast
+  // Active FG BOMs with no forecast -- only sellable SKU prefixes
+  const SELLABLE_PREFIXES=['BLE','SAL','RIM','REF','GIF','COL','PRO','BYO','MAR','SHE','POP','DEM'];
   const gaps=[...bomFGs].filter(fg=>{
     if(!inc(fg))return false;
     if(DISCONTINUED.includes(fg))return false;
+    // Only include if it has a sellable prefix (new SKU format) or is a known FG by inventory
+    const pre=fg.split('-')[0];
+    if(!SELLABLE_PREFIXES.includes(pre))return false;
     const f=fc[fg];return!f||f<=0;
-  }).map(fg=>({name:fg,cat:getCat(fg),created:bomDates[fg]||null,lastProd:lpMap[fg]||null}))
+  }).map(fg=>({name:fg,desc:S._descMap[fg]||'',cat:getCat(fg),created:bomDates[fg]||null,lastProd:lpMap[fg]||null}))
     .sort((a,b)=>{
       const da=a.created||'1900';const db=b.created||'1900';
       return db.localeCompare(da);
@@ -1185,7 +1113,7 @@ function showBOMGaps(){
   const w=window.open('','_blank','width=800,height=700');
   let h=`<html><head><title>Active BOMs Missing Forecast</title><style>body{font-family:Arial,sans-serif;padding:20px;background:#1a1a1a;color:#eee}table{border-collapse:collapse;width:100%}th,td{border:1px solid #444;padding:6px 10px}th{background:#2d2d2d;color:#d4a843;font-size:12px}td{font-size:13px}.cat{color:#888;font-size:11px}.date{color:#aaa;font-size:11px}.new{background:rgba(212,168,67,0.1)}h2{color:#d4a843;font-size:16px}</style></head><body>`;
   h+=`<h2>${gaps.length} Active BOMs with No Forecast</h2><p style="color:#888;font-size:12px">Sorted by BOM creation date (newest first). New products should be added to the forecast file.</p>`;
-  h+=`<table><tr><th>#</th><th>Product (BOM Name)</th><th>Category</th><th>BOM Created</th><th>Last Produced</th></tr>`;
+  h+=`<table><tr><th>#</th><th>SKU</th><th>Description</th><th>Category</th><th>BOM Created</th><th>Last Produced</th></tr>`;
   const thirtyDaysAgo=new Date();thirtyDaysAgo.setDate(thirtyDaysAgo.getDate()-30);
   gaps.forEach((fg,i)=>{
     const cd=fg.created?new Date(fixTZ(fg.created)):null;
@@ -1193,7 +1121,7 @@ function showBOMGaps(){
     const cdStr=cd&&!isNaN(cd)?cd.toLocaleDateString('en-CA'):'--';
     const lpd=fg.lastProd?new Date(fixTZ(fg.lastProd)):null;
     const lpStr=lpd&&!isNaN(lpd)?lpd.toLocaleDateString('en-CA'):'Never';
-    h+=`<tr class="${isNew?'new':''}"><td>${i+1}</td><td>${fg.name}</td><td class="cat">${fg.cat}</td><td class="date">${cdStr}${isNew?' <b style="color:#d4a843">NEW</b>':''}</td><td class="date">${lpStr}</td></tr>`;
+    h+=`<tr class="${isNew?'new':''}"><td>${i+1}</td><td style="font-family:monospace">${fg.name}</td><td class="cat">${fg.desc}</td><td class="cat">${fg.cat}</td><td class="date">${cdStr}${isNew?' <b style="color:#d4a843">NEW</b>':''}</td><td class="date">${lpStr}</td></tr>`;
   });
   h+=`</table></body></html>`;
   w.document.write(h);w.document.close();
@@ -1202,15 +1130,15 @@ function showBOMGaps(){
 function showForecastNoBOM(){
   const fc=S.forecast||{},boms=S.data.boms||[];
   const bomFGs=new Set();boms.forEach(b=>bomFGs.add(b.finished_good));
-  // Exact key match only - no fuzzy/case normalization post-migration
+  const bomFGsLower=new Set();boms.forEach(b=>bomFGsLower.add(b.finished_good.toLowerCase()));
   const gaps=Object.entries(fc).filter(([name,qty])=>{
     if(qty<=0)return false;
-    return!bomFGs.has(name);
+    return!bomFGs.has(name)&&!bomFGsLower.has(name.toLowerCase());
   }).map(([name,qty])=>({name,qty:Math.round(qty)})).sort((a,b)=>b.qty-a.qty);
   if(gaps.length===0){alert('All forecasted SKUs have matching BOMs. No gaps found.');return;}
   const w=window.open('','_blank','width=700,height=700');
   let h=`<html><head><title>Forecasted SKUs Missing BOM</title><style>body{font-family:Arial,sans-serif;padding:20px;background:#1a1a1a;color:#eee}table{border-collapse:collapse;width:100%}th,td{border:1px solid #444;padding:6px 10px}th{background:#2d2d2d;color:#d4a843;font-size:12px}td{font-size:13px}h2{color:#d4a843;font-size:16px}.qty{color:#aaa;font-size:12px}</style></head><body>`;
-  h+=`<h2>${gaps.length} Forecasted SKUs with No BOM in Fishbowl</h2><p style="color:#888;font-size:12px">Exact SKU key match only. These forecast names have no matching BOM finished_good in Fishbowl. Sorted by annual forecast volume.</p>`;
+  h+=`<h2>${gaps.length} Forecasted SKUs with No BOM in Fishbowl</h2><p style="color:#888;font-size:12px">These SKUs exist in the forecast file but have no matching BOM. Either the name doesn't match or the BOM hasn't been created yet. Sorted by annual forecast volume.</p>`;
   h+=`<table><tr><th>#</th><th>Forecast SKU Name</th><th>Annual Forecast</th></tr>`;
   gaps.forEach((g,i)=>{h+=`<tr><td>${i+1}</td><td>${g.name}</td><td class="qty">${g.qty.toLocaleString()}</td></tr>`;});
   h+=`</table></body></html>`;
@@ -1220,17 +1148,9 @@ function showForecastNoBOM(){
 // ======== CASE PACK BUILDER ========
 // Kit/Case Pack/Gift pattern - items built in-house at Kanel (not Axia)
 const KANEL_PROD_RE=/case pack|collection|duo|kit|trio|gift box|edit |shaken|holiday spirit|bright|bring|bonjour|bbq duo|smoke & fire|roasted & raw|top 5|sapio|voyager|mineral|spice lover|family fave|best seller|full spice|traveler/i;
-// Explicit Kanel Production items - legacy names AND their new SKU equivalents
+// Explicit Kanel Production items not caught by the regex
 const KANEL_PROD_EXTRA=['Bulk - Aglio Napoletano','Bulk - Charred Lemon Sea Salt','Bulk - Lemon Blueberry Bombshell','Bulk - Midnight Maple','Bulk - Midnight Umami','Bulk - Quebec Maple Smoked Salt','Bulk - Salt + Chili Margarita','Bulk - Sour Cherry','Bulk - The Ultimate Caesar','Spicy Jalapeno & Lime - 500g','The Summer Edit','The Ultimate Caesar - 500g'];
-function isKanelProd(n){
-  if(!n)return false;
-  // SKU prefix check: GIF=Gifts, COL=Collections, BYO=Build Your Own are always Kanel Production
-  const pfx=n.substring(0,3).toUpperCase();
-  if(pfx==='GIF'||pfx==='COL'||pfx==='BYO')return true;
-  // Description fallback for legacy / unmapped items
-  const desc=(S._descMap&&S._descMap[n])||n;
-  return KANEL_PROD_RE.test(desc)||KANEL_PROD_EXTRA.includes(n);
-}
+function isKanelProd(n){return KANEL_PROD_RE.test(n)||KANEL_PROD_EXTRA.includes(n);}
 
 function calcCP(){
   const boms=S.data.boms||[],inv=S.data.inventory||[],fc=S.forecast||{},fm=S.fm||{},ml=S.mL||[];
@@ -1262,7 +1182,7 @@ function rCP(){const d=calcCP();S._c.casepack=d;S._c.casepackF=d;const ml=S.mL||
     <div class="card"><div class="card-label">Covered</div><div class="card-value green">${d.length-nb}</div></div>`;
   document.getElementById('cpFilters').innerHTML=`<input type="text" class="search-input" placeholder="Search products..." oninput="S.cpQ=this.value;rCPT()">
     <label style="color:var(--text-muted);font-size:13px;margin-left:12px">Build for <select class="hs" onchange="S.cpBM=parseInt(this.value);rCP()">${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${n===S.cpBM?'selected':''}>${n} mo</option>`).join('')}</select></label>`;
-  document.getElementById('cpHead').innerHTML=`<tr><th onclick="srt('casepack','pn')">Product</th><th onclick="srt('casepack','oh')">On Hand</th><th onclick="srt('casepack','demand')">Demand</th><th onclick="srt('casepack','need')">Need</th><th onclick="srt('casepack','canBuild')">Can Build</th><th>Limiting</th><th onclick="srt('casepack','st')">Status</th><th style="width:40px">WO</th><th style="width:40px"><input type="checkbox" onchange="toggleAllKP(this.checked)"></th></tr>`;
+  document.getElementById('cpHead').innerHTML=`<tr><th onclick="srt('casepack','pn')">SKU</th><th>Description</th><th onclick="srt('casepack','oh')">On Hand</th><th onclick="srt('casepack','demand')">Demand</th><th onclick="srt('casepack','need')">Need</th><th onclick="srt('casepack','canBuild')">Can Build</th><th>Limiting</th><th onclick="srt('casepack','st')">Status</th><th style="width:40px">WO</th><th style="width:40px"><input type="checkbox" onchange="toggleAllKP(this.checked)"></th></tr>`;
   rCPT();
 }
 function rCPT(d){if(!d){d=S._c.casepack||[];if(S.cpQ)d=d.filter(r=>r.pn.toLowerCase().includes(S.cpQ.toLowerCase()));}
@@ -1270,7 +1190,7 @@ function rCPT(d){if(!d){d=S._c.casepack||[];if(S.cpQ)d=d.filter(r=>r.pn.toLowerC
   document.getElementById('cpBody').innerHTML=d.map(r=>{const sel=S.cpSel===r.pn;const chk=!!S.cpMoSel[r.pn];
     const stCol=r.need<=0?'var(--green)':r.canBuild>=r.need?'var(--blue)':r.canBuild===0?'var(--red)':'var(--orange)';
     const stTxt=r.need<=0?'OK':r.canBuild>=r.need?`BUILD ${r.need}`:`SHORT ${r.need-r.canBuild}`;
-    return`<tr style="${sel?'background:var(--accent-dim)':''}"><td>${r.pn}</td><td class="num">${fmt(r.oh)}</td><td class="num">${fmt(r.demand)}</td>
+    return`<tr style="${sel?'background:var(--accent-dim)':''}"><td style="font-family:var(--mono);font-size:12px">${r.pn}</td><td style="font-size:11px;color:var(--text-muted)">${S._descMap[r.pn]||''}</td><td class="num">${fmt(r.oh)}</td><td class="num">${fmt(r.demand)}</td>
     <td class="num" style="font-weight:600;color:${r.need>0?'var(--accent)':'var(--text-muted)'}">${fmt(r.need)}</td>
     <td class="num" style="color:${r.canBuild===0?'var(--red)':'var(--blue)'}">${fmt(r.canBuild)}</td>
     <td style="font-size:12px;color:var(--text-muted)">${r.limComp}</td>
@@ -1410,7 +1330,7 @@ function rAX(){
     <label style="color:var(--text-muted);font-size:13px;margin-left:12px">Build horizon <select class="hs" onchange="S.axiaBM=parseInt(this.value);rAX()">${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${n===S.axiaBM?'selected':''}>${n} mo</option>`).join('')}</select></label>
     <button class="filter-btn" style="margin-left:12px" onclick="selectAllAxia()">Select All Needing Production</button>`;
   document.getElementById('axiaHead').innerHTML=`<tr>
-    <th style="width:40px">Sel</th><th onclick="srt('axia','pn')">SKU</th><th onclick="srt('axia','cat')">Category</th><th onclick="srt('axia','av')">Avail</th><th onclick="srt('axia','woh')">WOH</th><th onclick="srt('axia','soM')">Stockout</th>
+    <th style="width:40px">Sel</th><th onclick="srt('axia','pn')">SKU</th><th>Description</th><th onclick="srt('axia','cat')">Category</th><th onclick="srt('axia','av')">Avail</th><th onclick="srt('axia','woh')">WOH</th><th onclick="srt('axia','soM')">Stockout</th>
     ${ml.map(m=>`<th style="font-size:10px">${m.substring(0,3)}</th>`).join('')}
     <th onclick="srt('axia','rawNeed')">Raw Need</th><th onclick="srt('axia','moqQty')">MO Qty</th><th>MOQ</th><th onclick="srt('axia','canBuild')">Can Build</th><th>Limiting RM</th><th onclick="srt('axia','st')">Status</th></tr>`;
   rAXT();updateAxSel();
@@ -1426,7 +1346,7 @@ function rAXT(d){
     const buildTxt={'yes':'YES','partial':'PARTIAL','no':'NO','ok':'--'}[r.buildSt]||'--';
     // Main row: projected ending inventory
     html+=`<tr><td><input type="checkbox" ${sel?'checked':''} onchange="toggleAxSel('${r.pn.replace(/'/g,"\\'")}',this.checked)"></td>
-      <td>${r.pn}</td><td style="font-size:11px;color:var(--text-muted)">${r.cat}</td>
+      <td style="font-family:var(--mono);font-size:12px">${r.pn}</td><td style="font-size:11px;color:var(--text-muted)">${S._descMap[r.pn]||''}</td><td style="font-size:11px;color:var(--text-muted)">${r.cat}</td>
       <td class="num">${fmt(r.av)}</td><td class="num" style="font-weight:600">${r.woh>=999?'--':fmt(r.woh,1)}</td>
       <td style="color:${r.soM!=='--'?'var(--red)':'var(--text-muted)'}">${r.soM}</td>
       ${(r.proj||[]).map(v=>`<td class="num" style="font-size:11px;color:${v<=0?'var(--red)':v<500?'var(--orange)':'var(--text-muted)'}">${fmt(v)}</td>`).join('')}
@@ -1437,12 +1357,12 @@ function rAXT(d){
       <td style="font-size:11px;color:var(--text-muted);max-width:150px;overflow:hidden;text-overflow:ellipsis" title="${r.limRM}">${r.limRM||'--'}</td>
       <td>${bdg(r.st)}</td></tr>`;
     // Demand row (monthly forecast demand)
-    html+=`<tr class="receipt-row" style="color:var(--orange)"><td></td><td colspan="2" style="font-size:11px;color:var(--orange)">- Demand</td><td></td><td></td><td></td>
+    html+=`<tr class="receipt-row" style="color:var(--orange)"><td></td><td colspan="3" style="font-size:11px;color:var(--orange)">- Demand</td><td></td><td></td><td></td>
       ${(r.demArr||[]).map(v=>`<td class="num" style="font-size:11px;color:var(--orange)">${v>0?'-'+fmt(v):''}</td>`).join('')}
       <td colspan="5"></td></tr>`;
     // Receipt row (if any MO receipts exist for this SKU)
     if(r.hasReceipts){
-      html+=`<tr class="receipt-row"><td></td><td colspan="2" style="font-size:11px;color:var(--green)">+ MO Receipts</td><td></td><td></td><td></td>
+      html+=`<tr class="receipt-row"><td></td><td colspan="3" style="font-size:11px;color:var(--green)">+ MO Receipts</td><td></td><td></td><td></td>
         ${(r.rcptRow||[]).map(v=>`<td class="num" style="font-size:11px;color:var(--green)">${v>0?'+'+fmt(v):''}</td>`).join('')}
         <td colspan="5"></td></tr>`;
     }
@@ -1723,17 +1643,7 @@ const FCT_PY_MONTHS=['Feb 2025','Mar 2025','Apr 2025','May 2025','Jun 2025','Jul
 const FCT_Y1_MONTHS=['Feb 2024','Mar 2024','Apr 2024','May 2024','Jun 2024','Jul 2024','Aug 2024','Sep 2024','Oct 2024','Nov 2024','Dec 2024','Jan 2025'];
 
 function getFctComp(){try{const s=localStorage.getItem('kh-fct-comp');if(s)return JSON.parse(s);}catch(e){}return FCT_DEFAULT_COMP.slice();}
-function saveFctComp(){
-  const comp=[];
-  for(let i=0;i<12;i++){const el=document.getElementById('fctComp'+i);comp.push(el?parseFloat(el.value)||0:FCT_DEFAULT_COMP[i]);}
-  localStorage.setItem('kh-fct-comp',JSON.stringify(comp));
-  // Re-seed forecast with new comp rates so WOH and RM Demand update to match
-  try{localStorage.removeItem('kh-fc');localStorage.removeItem('kh-fm');localStorage.removeItem('kh-ml');}catch(e){}
-  S.forecast={};S.fm={};S.mL=[];
-  seedForecastFromFishbowl();
-  rWipFct();
-  renderAll();
-}
+function saveFctComp(){const comp=[];for(let i=0;i<12;i++){const el=document.getElementById('fctComp'+i);comp.push(el?parseFloat(el.value)||0:FCT_DEFAULT_COMP[i]);}localStorage.setItem('kh-fct-comp',JSON.stringify(comp));rWipFct();}
 function resetFctComp(){localStorage.removeItem('kh-fct-comp');rWipFct();}
 
 function calcFctFromFishbowl(){
@@ -2010,7 +1920,7 @@ function rBOM(){let d=(S.data.boms||[]).filter(b=>inc(b.finished_good)&&inc(b.co
   S._c.bomsF=d;rBOMT(d);
 }
 function rBOMT(d){if(!d)d=S._c.bomsF||[];document.getElementById('bomCount').textContent=`${d.length} rows`;
-  document.getElementById('bomBody').innerHTML=d.map(r=>`<tr><td>${r.finished_good}</td><td>${r.component}</td><td class="num">${r.qty_per}</td><td>${r.uom}</td></tr>`).join('');
+  document.getElementById('bomBody').innerHTML=d.map(r=>`<tr><td style="font-family:var(--mono);font-size:12px">${r.finished_good}</td><td style="font-size:11px;color:var(--text-muted)">${S._descMap[r.finished_good]||''}</td><td style="font-family:var(--mono);font-size:12px">${r.component}</td><td style="font-size:11px;color:var(--text-muted)">${S._descMap[r.component]||''}</td><td class="num">${r.qty_per}</td><td>${r.uom}</td></tr>`).join('');
 }
 
 // ======== PURCHASING TAB ========
@@ -2655,13 +2565,7 @@ function rManage(){
 }
 function toggleItem(pn,included){if(included)delete S.excluded[pn];else S.excluded[pn]=true;localStorage.setItem('kh-excl',JSON.stringify(S.excluded));rManage();}
 function autoExclude(){const inv=S.data?S.data.inventory||[]:[];let count=0;
-  inv.forEach(i=>{
-    // Match against both part_number (catches legacy names + explicit SKU patterns like GIF-0008-C)
-    // and description (needed when part_number is a clean SKU like PKG-0001)
-    const desc=(S._descMap&&S._descMap[i.part_number])||i.part_number;
-    const matchTarget=i.part_number+'|'+desc;
-    if(AUTO_EXCL.some(p=>matchTarget.includes(p))){if(!S.excluded[i.part_number]){S.excluded[i.part_number]=true;count++;}}
-  });
+  inv.forEach(i=>{if(AUTO_EXCL.some(p=>i.part_number.includes(p))){if(!S.excluded[i.part_number]){S.excluded[i.part_number]=true;count++;}}});
   localStorage.setItem('kh-excl',JSON.stringify(S.excluded));alert(`Auto-excluded ${count} items.`);rManage();renderAll();}
 
 // ======== EXPORT SYSTEM ========
@@ -2790,17 +2694,29 @@ async function exportToGDrive(wb,fileName){
 }
 
 // ======== RENDER ALL ========
-function renderAll(){
-  if(!S.data)return;
-  // Build part_number -> description lookup before any getCat/catRM/isKanelProd calls
-  S._descMap={};
-  (S.data.inventory||[]).forEach(i=>{if(i.part_number)S._descMap[i.part_number]=i.description||i.part_number;});
-  S._abc=calcABC();
-  rExec();rWOH();rRMD();rCP();rAX();rPurch();rPO();rBOM();rMO();checkChangelog();
-}
+function renderAll(){if(!S.data)return;S._abc=calcABC();rWipFct();rWOH();rRMD();rCP();rAX();rPurch();rPO();rBOM();rMO();checkChangelog();}
 
 // ======== CHANGELOG / UPDATE LOG ========
 const CHANGELOG=[
+  {version:'2026-03-08',date:'March 8, 2026',title:'Navigation, Description Columns, WOH Category Filters',
+  items:[
+    {section:'Navigation',changes:[
+      'Forecast Hub is now the first tab and opens by default.',
+      'Executive Summary tab removed.',
+      'Prod Calendar tab removed.',
+      'Safety Stock kept (marked WIP).',
+    ]},
+    {section:'Description Columns',changes:[
+      'SKU + Description now shows side by side on: Weeks on Hand, RM Demand, Kanel Production, Axia Production, BOMs.',
+      'Active BOMs No Forecast popup now includes description column and filters to sellable SKU prefixes only (BLE, SAL, RIM, REF, GIF, COL, PRO, BYO, MAR, SHE, POP, DEM).',
+    ]},
+    {section:'Weeks on Hand',changes:[
+      'Manage WOH Items panel removed. All FG SKUs now show on WOH by default.',
+      'Category checkboxes added below the status filters (BLE, SAL, RIM, REF, GIF, COL, PRO, BYO, PKG, MAR, SHE, POP, DEM). Uncheck any category to hide it.',
+      'Checkbox selections are saved in your browser -- they persist between sessions.',
+      'BLK- prefix (bulk ingredients) excluded from WOH. All other FG SKUs included.',
+    ]},
+  ]},
   {version:'4.1.0',date:'Feb 24, 2026',title:'Forecast Hub - Live Data-Driven Forecasting',
   deploy:{proxy:true,frontend:true,instructions:'This update requires both proxy and frontend updates.'},
   items:[
@@ -2927,73 +2843,15 @@ async function saveConfig(){
   document.getElementById("app").classList.remove("hidden");
   refreshData();
 }
-async function fetchWithRetry(url,maxRetries=2,delayMs=1500){
-  for(let attempt=0;attempt<=maxRetries;attempt++){
-    try{
-      const r=await fetch(url);
-      if(r.status===502&&attempt<maxRetries){await new Promise(res=>setTimeout(res,delayMs));continue;}
-      if(!r.ok)throw new Error(`HTTP ${r.status}`);
-      return await r.json();
-    }catch(e){
-      if(attempt===maxRetries)throw e;
-      await new Promise(res=>setTimeout(res,delayMs));
-    }
-  }
-}
-function autoSeedForecast(monthlySales){
-  if(!monthlySales||monthlySales.length===0)return;
-  // Check if existing forecast is already SKU-keyed -- if so, skip unless forced
-  if(S.forecast&&Object.keys(S.forecast).length>0){
-    const keys=Object.keys(S.forecast);
-    const skuKeyed=keys.filter(k=>/^[A-Z]{2,4}-\d{3,}/.test(k)).length;
-    if(skuKeyed/keys.length>0.5){
-      console.log('[Hub] Forecast already SKU-keyed, skipping auto-seed');
-      return;
-    }
-    // Keys look like old product names -- force re-seed
-    console.log('[Hub] Stale forecast keys detected, re-seeding from Fishbowl');
-    try{localStorage.removeItem('kh-fc');localStorage.removeItem('kh-fm');localStorage.removeItem('kh-ml');}catch(e){}
-  }
-  seedForecastFromFishbowl();
-}
-function seedForecastFromFishbowl(){
-  // Use the authoritative calcFctFromFishbowl() which uses real FCT_PY_MONTHS + getFctComp()
-  const results=calcFctFromFishbowl();
-  if(!results||results.length===0)return;
-  const annual={},monthly={};
-  results.forEach(r=>{
-    if(r.fctTotal>0){annual[r.sku]=r.fctTotal;monthly[r.sku]=r.fctArr;}
-  });
-  if(Object.keys(annual).length===0)return;
-  S.forecast=annual;S.fm=monthly;S.mL=FCT_MONTHS.slice();
-  try{
-    localStorage.setItem('kh-fc',JSON.stringify(annual));
-    localStorage.setItem('kh-fm',JSON.stringify(monthly));
-    localStorage.setItem('kh-ml',JSON.stringify(FCT_MONTHS));
-  }catch(e){}
-  console.log(`[Hub] Forecast seeded from Fishbowl: ${Object.keys(annual).length} SKUs, ${FCT_MONTHS[0]} to ${FCT_MONTHS[FCT_MONTHS.length-1]}`);
-}
 async function refreshData(){
   const btn=document.getElementById('refreshBtn');btn.disabled=true;
   btn.innerHTML='<div class="loading-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div>Loading...';
-  const base='https://kanel-fishbowl-proxy.kanelhub.workers.dev';
-  try{
-    // Sequential fetch -- Fishbowl has a 3-session hard limit.
-    // Parallel requests burn 2 sessions at once and reliably 502 if any other session is open.
-    const dataA=await fetchWithRetry(`${base}?action=hub_woh_a`);
-    const dataB=await fetchWithRetry(`${base}?action=hub_woh_b`).catch(e=>{
-      console.warn('[Hub] hub_woh_b failed after retries:',e.message);
-      return {}; // Degrade gracefully -- hub_woh_a data still renders
-    });
-    S.data=Object.assign({},dataA,dataB);
-    // Auto-seed forecast if this machine has never uploaded one
-    autoSeedForecast(S.data.monthly_sales||[]);
+  try{const r=await fetch(`https://kanel-fishbowl-proxy.kanelhub.workers.dev?action=hub_woh`);if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    S.data=await r.json();
     document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleString('en-CA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
     renderAll();
-  }catch(e){alert('Failed to load hub data: '+e.message);}
-  btn.disabled=false;
-  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>Refresh';
-}
+  }catch(e){alert('Failed: '+e.message);}
+  btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>Refresh';}
 function loadConfig(){
   S.config={url:"https://kanel-fishbowl-proxy.kanelhub.workers.dev",worker:true};
   try{
@@ -3001,7 +2859,7 @@ function loadConfig(){
     const fm=localStorage.getItem("kh-fm");if(fm)S.fm=JSON.parse(fm);
     const ml=localStorage.getItem("kh-ml");if(ml)S.mL=JSON.parse(ml);
     const ex=localStorage.getItem("kh-excl");if(ex)S.excluded=JSON.parse(ex);
-    const wex=localStorage.getItem("kh-woh-excl");if(wex)S.wohExcluded=JSON.parse(wex);
+    initWohCats();
   }catch(e){}
   document.getElementById("setupScreen").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
