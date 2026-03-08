@@ -158,7 +158,7 @@ select.hs{background:var(--surface-2);color:var(--text);border:1px solid var(--b
 <div style="margin-top:8px;font-size:11px;color:var(--text-muted)" id="wohManageCount"></div>
 </div>
 <div class="table-wrap"><div class="table-scroll"><table><thead><tr>
-<th onclick="srt('woh','pn')">Product</th><th onclick="srt('woh','abc')">ABC</th><th onclick="srt('woh','cat')">Category</th><th onclick="srt('woh','oh')">On Hand</th><th onclick="srt('woh','cm')">Committed</th><th onclick="srt('woh','av')">Available</th><th onclick="srt('woh','wf')">Wkly Fcst</th><th onclick="srt('woh','doh')">DOH</th><th onclick="srt('woh','woh')">WOH</th><th onclick="srt('woh','moh')">MOH</th><th>Bar</th><th onclick="srt('woh','replen')">Replen Date</th><th onclick="srt('woh','replenFlag')">Replen Status</th><th onclick="srt('woh','st')">Status</th>
+<th onclick="srt('woh','pn')">SKU</th><th onclick="srt('woh','desc')">Description</th><th onclick="srt('woh','abc')">ABC</th><th onclick="srt('woh','cat')">Category</th><th onclick="srt('woh','oh')">On Hand</th><th onclick="srt('woh','cm')">Committed</th><th onclick="srt('woh','av')">Available</th><th onclick="srt('woh','wf')">Wkly Fcst</th><th onclick="srt('woh','doh')">DOH</th><th onclick="srt('woh','woh')">WOH</th><th onclick="srt('woh','moh')">MOH</th><th>Bar</th><th onclick="srt('woh','replen')">Replen Date</th><th onclick="srt('woh','replenFlag')">Replen Status</th><th onclick="srt('woh','st')">Status</th>
 </tr></thead><tbody id="wohBody"></tbody></table></div></div></div>
 
 <!-- RM DEMAND -->
@@ -607,7 +607,7 @@ function toKg(q,u){const l=(u||'').toLowerCase();if(l==='gram'||l==='g')return q
 function isWt(u){return['gram','g','kilogram','kg','454g bag','5kg bag'].includes((u||'').toLowerCase());}
 function dU(u){return isWt(u)?'kg':u;}
 function inc(n){return!S.excluded[n]&&!DISCONTINUED.includes(n);}
-function incWOH(n){if(S.excluded[n])return false;if(S.wohExcluded[n])return false;if(WOH_EXCLUDE.includes(n))return false;if(/^Bulk /i.test(n))return false;return true;}
+function incWOH(n){if(S.excluded[n])return false;if(S.wohExcluded[n])return false;if(WOH_EXCLUDE.includes(n))return false;if(/^BLK-/i.test(n))return false;if(/^Bulk /i.test(n))return false;const desc=(S._descMap&&S._descMap[n])||'';if(/^Bulk /i.test(desc))return false;return true;}
 function isDisc(n){return DISCONTINUED.includes(n);}
 
 // WOH Manage Items (WOH-specific, does NOT affect RM Demand or other tabs)
@@ -621,8 +621,8 @@ function rWohManage(searchOverride){
   const q=searchOverride!==undefined?searchOverride:(document.getElementById('wohManageSearch')||{}).value||'';
   const f=(document.getElementById('wohManageFilter')||{}).value||'all';
   // Only show FG items (not RM, not Bulk, not Kanel Prod)
-  let d=inv.filter(i=>i.item_class==='FG'&&!isKanelProd(i.part_number)&&!/^Bulk /i.test(i.part_number));
-  if(q)d=d.filter(r=>r.part_number.toLowerCase().includes(q.toLowerCase()));
+  let d=inv.filter(i=>{if(i.item_class!=='FG')return false;if(isKanelProd(i.part_number))return false;if(/^BLK-/i.test(i.part_number))return false;if(/^Bulk /i.test(i.part_number))return false;const desc=(S._descMap&&S._descMap[i.part_number])||i.description||'';if(/^Bulk /i.test(desc))return false;return true;});
+  if(q)d=d.filter(r=>{const desc=(S._descMap&&S._descMap[r.part_number])||r.description||'';return r.part_number.toLowerCase().includes(q.toLowerCase())||desc.toLowerCase().includes(q.toLowerCase());});
   if(f==='shown')d=d.filter(r=>!S.wohExcluded[r.part_number]&&!WOH_EXCLUDE.includes(r.part_number)&&!S.excluded[r.part_number]);
   else if(f==='hidden')d=d.filter(r=>S.wohExcluded[r.part_number]||WOH_EXCLUDE.includes(r.part_number)||S.excluded[r.part_number]);
   d.sort((a,b)=>a.part_number.localeCompare(b.part_number));
@@ -968,10 +968,10 @@ function calcWOH(){
       if(stockoutDate&&replen){const rd=new Date(fixTZ(replen));replenFlag=rd<=stockoutDate?'on-time':'late';}
       else if(replen)replenFlag='on-time';
     }else if(st==='oos'||st==='critical'||st==='atrisk'){replenFlag='none';}
-    return{pn:item.part_number,cat:getCat(item.part_number),oh,cm,av,wf:wf?Math.round(wf*10)/10:null,doh,woh:woh!==null?Math.round(woh*10)/10:null,moh,st,replen,replenQty,replenFlag,stockoutDate};
+    return{pn:item.part_number,desc:(S._descMap&&S._descMap[item.part_number])||'',cat:getCat(item.part_number),oh,cm,av,wf:wf?Math.round(wf*10)/10:null,doh,woh:woh!==null?Math.round(woh*10)/10:null,moh,st,replen,replenQty,replenFlag,stockoutDate};
   });
   disc.forEach(item=>{
-    results.push({pn:item.part_number,cat:getCat(item.part_number),oh:item.on_hand_qty,cm:item.committed_qty||0,av:item.available_qty!==undefined?item.available_qty:item.on_hand_qty,wf:null,doh:null,woh:null,moh:null,st:'disc',replen:null,replenQty:0,replenFlag:null,stockoutDate:null});
+    results.push({pn:item.part_number,desc:(S._descMap&&S._descMap[item.part_number])||'',cat:getCat(item.part_number),oh:item.on_hand_qty,cm:item.committed_qty||0,av:item.available_qty!==undefined?item.available_qty:item.on_hand_qty,wf:null,doh:null,woh:null,moh:null,st:'disc',replen:null,replenQty:0,replenFlag:null,stockoutDate:null});
   });
   return results;
 }
@@ -1000,14 +1000,14 @@ function rWOH(){
   rWOHT();
 }
 function rWOHT(d){
-  if(!d){d=S._c.woh||[];if(S.wohFilter!=='all')d=d.filter(r=>r.st===S.wohFilter);if(S.wohSearch){const q=S.wohSearch.toLowerCase();d=d.filter(r=>r.pn.toLowerCase().includes(q));}}
+  if(!d){d=S._c.woh||[];if(S.wohFilter!=='all')d=d.filter(r=>r.st===S.wohFilter);if(S.wohSearch){const q=S.wohSearch.toLowerCase();d=d.filter(r=>r.pn.toLowerCase().includes(q)||(r.desc||'').toLowerCase().includes(q));}}
   S._c.wohF=d;document.getElementById('wohCount').textContent=`${d.length} items`;
   document.getElementById('wohBody').innerHTML=d.map(r=>{const bw=r.woh!==null?Math.min(100,r.woh/30*100):0;
     const repTxt=r.replen?`<span style="color:var(--green)">${fmtDate(fixTZ(r.replen))}</span><br><span style="font-size:10px;color:var(--text-muted)">${fmt(r.replenQty)} units</span>`:'<span style="color:var(--text-muted)">None</span>';
     const flagMap={'on-time':'<span class="badge badge-healthy">ON TIME</span>','late':'<span class="badge badge-critical">LATE</span>','none':'<span class="badge badge-oos">NO MO</span>'};
     const flagTxt=flagMap[r.replenFlag]||'<span style="color:var(--text-muted)">--</span>';
     const abcG=getABC(r.pn);const abcClr=abcG.grade==='A'?'var(--green)':abcG.grade==='B'?'var(--orange)':'var(--text-muted)';
-    return`<tr><td>${r.pn}</td><td style="text-align:center;font-weight:700;color:${abcClr}">${abcG.grade}</td><td style="font-size:12px;color:var(--text-muted)">${r.cat}</td>
+    return`<tr><td style="font-family:var(--mono);font-size:11px">${r.pn}</td><td style="font-size:12px">${r.desc||''}</td><td style="text-align:center;font-weight:700;color:${abcClr}">${abcG.grade}</td><td style="font-size:12px;color:var(--text-muted)">${r.cat}</td>
     <td class="num">${fmt(r.oh)}</td><td class="num" style="color:${r.cm>0?'var(--orange)':'var(--text-muted)'}">${fmt(r.cm)}</td>
     <td class="num" style="font-weight:600">${fmt(r.av)}</td><td class="num">${r.wf!==null?fmt(r.wf,1):'--'}</td>
     <td class="num" style="color:var(--text-muted)">${r.doh!==null?fmt(r.doh):'--'}</td>
