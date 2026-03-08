@@ -1723,7 +1723,17 @@ const FCT_PY_MONTHS=['Feb 2025','Mar 2025','Apr 2025','May 2025','Jun 2025','Jul
 const FCT_Y1_MONTHS=['Feb 2024','Mar 2024','Apr 2024','May 2024','Jun 2024','Jul 2024','Aug 2024','Sep 2024','Oct 2024','Nov 2024','Dec 2024','Jan 2025'];
 
 function getFctComp(){try{const s=localStorage.getItem('kh-fct-comp');if(s)return JSON.parse(s);}catch(e){}return FCT_DEFAULT_COMP.slice();}
-function saveFctComp(){const comp=[];for(let i=0;i<12;i++){const el=document.getElementById('fctComp'+i);comp.push(el?parseFloat(el.value)||0:FCT_DEFAULT_COMP[i]);}localStorage.setItem('kh-fct-comp',JSON.stringify(comp));rWipFct();}
+function saveFctComp(){
+  const comp=[];
+  for(let i=0;i<12;i++){const el=document.getElementById('fctComp'+i);comp.push(el?parseFloat(el.value)||0:FCT_DEFAULT_COMP[i]);}
+  localStorage.setItem('kh-fct-comp',JSON.stringify(comp));
+  // Re-seed forecast with new comp rates so WOH and RM Demand update to match
+  try{localStorage.removeItem('kh-fc');localStorage.removeItem('kh-fm');localStorage.removeItem('kh-ml');}catch(e){}
+  S.forecast={};S.fm={};S.mL=[];
+  seedForecastFromFishbowl();
+  rWipFct();
+  renderAll();
+}
 function resetFctComp(){localStorage.removeItem('kh-fct-comp');rWipFct();}
 
 function calcFctFromFishbowl(){
@@ -2917,11 +2927,6 @@ async function saveConfig(){
   document.getElementById("app").classList.remove("hidden");
   refreshData();
 }
-// Default comp% rates for forecast auto-seed when no localStorage exists (month-keyed, used by autoSeedForecast only)
-const SEED_COMP_BY_MONTH={
-  'Jan':0.10,'Feb':0.10,'Mar':0.10,'Apr':0.10,'May':0.10,'Jun':0.10,
-  'Jul':0.10,'Aug':0.10,'Sep':0.15,'Oct':0.15,'Nov':0.15,'Dec':0.15
-};
 async function fetchWithRetry(url,maxRetries=2,delayMs=1500){
   for(let attempt=0;attempt<=maxRetries;attempt++){
     try{
@@ -2936,56 +2941,37 @@ async function fetchWithRetry(url,maxRetries=2,delayMs=1500){
   }
 }
 function autoSeedForecast(monthlySales){
-  // Only seed if no forecast exists yet (first load on a new machine)
   if(!monthlySales||monthlySales.length===0)return;
+  // Check if existing forecast is already SKU-keyed -- if so, skip unless forced
   if(S.forecast&&Object.keys(S.forecast).length>0){
-    // Migration check: if existing keys look like old product names (no SKU prefix like BLE-0001)
-    // force a re-seed so RM demand BOM matching works with new SKU keys
     const keys=Object.keys(S.forecast);
-    const looksLikeSkus=keys.filter(k=>/^[A-Z]{2,3}-\d{4}/.test(k)).length;
-    if(looksLikeSkus/keys.length>0.5)return; // Already SKU-keyed, skip
-    console.log('[Hub] Forecast keys look like old product names, forcing re-seed from monthly_sales');
-    S.forecast={};S.fm={};S.mL=[];
+    const skuKeyed=keys.filter(k=>/^[A-Z]{2,4}-\d{3,}/.test(k)).length;
+    if(skuKeyed/keys.length>0.5){
+      console.log('[Hub] Forecast already SKU-keyed, skipping auto-seed');
+      return;
+    }
+    // Keys look like old product names -- force re-seed
+    console.log('[Hub] Stale forecast keys detected, re-seeding from Fishbowl');
     try{localStorage.removeItem('kh-fc');localStorage.removeItem('kh-fm');localStorage.removeItem('kh-ml');}catch(e){}
   }
-  // Build map: sku -> {month_label: qty} from monthly_sales
-  const bySkuMonth={};
-  monthlySales.forEach(r=>{
-    if(!r.sku)return;
-    if(!bySkuMonth[r.sku])bySkuMonth[r.sku]={};
-    bySkuMonth[r.sku][r.month_label]=r.qty||0;
-  });
-  // Get sorted unique months from data
-  const monthSet=new Set();monthlySales.forEach(r=>{if(r.month_label)monthSet.add(r.month_label);});
-  const months=Array.from(monthSet).sort();
-  // Use most recent 12 months as base, apply default comp%
-  const last12=months.slice(-12);
+  seedForecastFromFishbowl();
+}
+function seedForecastFromFishbowl(){
+  // Use the authoritative calcFctFromFishbowl() which uses real FCT_PY_MONTHS + getFctComp()
+  const results=calcFctFromFishbowl();
+  if(!results||results.length===0)return;
   const annual={},monthly={};
-  Object.entries(bySkuMonth).forEach(([sku,mData])=>{
-    let yr=0;const mo=[];
-    last12.forEach(ml=>{
-      const base=mData[ml]||0;
-      const mKey=ml.substring(0,3);
-      const comp=SEED_COMP_BY_MONTH[mKey]||0.10;
-      const fct=Math.round(base*(1+comp));
-      yr+=fct;mo.push(fct);
-    });
-    if(yr>0){annual[sku]=yr;monthly[sku]=mo;}
+  results.forEach(r=>{
+    if(r.fctTotal>0){annual[r.sku]=r.fctTotal;monthly[r.sku]=r.fctArr;}
   });
   if(Object.keys(annual).length===0)return;
-  S.forecast=annual;S.fm=monthly;
-  // Build mL from last12 shifted forward 12 months
-  S.mL=last12.map(ml=>{
-    const d=new Date(ml+' 1 2000');d.setFullYear(d.getFullYear()+1);
-    return d.toLocaleString('en-CA',{month:'short',year:'numeric'});
-  });
-  // Save to localStorage so subsequent loads skip the seed
+  S.forecast=annual;S.fm=monthly;S.mL=FCT_MONTHS.slice();
   try{
     localStorage.setItem('kh-fc',JSON.stringify(annual));
     localStorage.setItem('kh-fm',JSON.stringify(monthly));
-    localStorage.setItem('kh-ml',JSON.stringify(S.mL));
+    localStorage.setItem('kh-ml',JSON.stringify(FCT_MONTHS));
   }catch(e){}
-  console.log(`[Hub] Forecast auto-seeded from monthly_sales: ${Object.keys(annual).length} SKUs, base months ${last12[0]} to ${last12[last12.length-1]}`);
+  console.log(`[Hub] Forecast seeded from Fishbowl: ${Object.keys(annual).length} SKUs, ${FCT_MONTHS[0]} to ${FCT_MONTHS[FCT_MONTHS.length-1]}`);
 }
 async function refreshData(){
   const btn=document.getElementById('refreshBtn');btn.disabled=true;
