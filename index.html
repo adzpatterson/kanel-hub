@@ -732,8 +732,27 @@ function showFU(){
       const inv=(S.data&&S.data.inventory)||[];
       const pnSet=new Set(inv.map(i=>i.part_number));
       let matched=0,total=0;
+      // Find nameCol: look for a column header row near hdr with "sku" or "part" label,
+      // or detect by checking which column has SKU-pattern values (e.g. BLE-0001, RIM-0002)
       let nameCol=0,dataStart=hdr+1;
-      for(let i=hdr+1;i<Math.min(hdr+8,rows.length);i++){const r=rows[i];if(!r)continue;const c0=String(r[0]||'').trim().toLowerCase();if(!c0||c0==='fct'||c0==='category'||c0==='month')continue;if(r[3]&&String(r[3]).trim().length>2){nameCol=3;}dataStart=i;break;}
+      const SKU_RE=/^[A-Z]{2,4}-\d{3,}/;
+      for(let i=hdr+1;i<Math.min(hdr+8,rows.length);i++){
+        const r=rows[i];if(!r)continue;
+        const c0=String(r[0]||'').trim().toLowerCase();
+        if(!c0||c0==='fct'||c0==='category'||c0==='month')continue;
+        // Check if col 1 looks like a SKU -- preferred key post-migration
+        if(r[1]&&SKU_RE.test(String(r[1]).trim())){nameCol=1;}
+        // Also scan for a header row between hdr and this data row that says "sku" in some column
+        else{
+          for(let hi=hdr+1;hi<i;hi++){
+            const hr=rows[hi];if(!hr)continue;
+            for(let c=0;c<6;c++){const h=String(hr[c]||'').trim().toLowerCase();if(h==='sku'||h==='part_number'||h==='part number'){nameCol=c;break;}}
+          }
+          // Fallback: col 3 if it has content (old behaviour)
+          if(nameCol===0&&r[3]&&String(r[3]).trim().length>2)nameCol=3;
+        }
+        dataStart=i;break;
+      }
       for(let i=dataStart;i<rows.length;i++){
         const r=rows[i];if(!r)continue;const name=String(r[nameCol]||'').trim();if(!name||name==='None'||name.toLowerCase()==='category')continue;total++;
         // Exact match only -- post-migration all keys are clean SKUs
