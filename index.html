@@ -697,6 +697,8 @@ function calcWOHData() {
     if (!isActive(i) || !isIncluded(i.num)) return false;
     if (i.num.startsWith('BLK-')) return false;
     if (/^Bulk /i.test(i.desc)) return false;
+    if (i.num.endsWith('-PI')) return false;
+    if ((i.desc||'').toLowerCase().includes('perfectly imperfect')) return false;
     return true;
   }).map(i => {
     const annFct = getAnnualFct(i.num);
