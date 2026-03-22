@@ -388,8 +388,20 @@ function buildLookups() {
 
   (D.inventory || []).forEach(i => { L.invByNum[i.num] = i; });
 
+  // Build inventory description -> num map for sales remapping
+  const invByDesc = {};
+  (D.inventory || []).forEach(i => {
+    if (i.desc) invByDesc[i.desc.toLowerCase()] = i.num;
+  });
+
   (D.monthly_sales || []).forEach(s => {
+    // Store under whatever key came from cache
     L.salesMap[s.sku + '|' + s.month] = s;
+    // Also store under resolved SKU if the cache stored a legacy name
+    const resolved = invByDesc[s.sku.toLowerCase()];
+    if (resolved && resolved !== s.sku) {
+      L.salesMap[resolved + '|' + s.month] = s;
+    }
   });
 
   (D.mtd_sales || []).forEach(s => { L.mtdMap[s.sku] = s; });
