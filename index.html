@@ -691,23 +691,48 @@ function renderPace() {
 // ============================================================
 // WEEKS ON HAND
 // ============================================================
+function getCasePackSize(desc) {
+  // Parse size from "A Sprinkle of Sunshine - Case Pack (8)" -> 8
+  const m = /Case Pack\s*\((\d+)\)/i.exec(desc || '');
+  return m ? parseInt(m[1]) : 8; // default 8
+}
+
 function calcWOHData() {
-  const comp = getComp();
-  return (D.inventory || []).filter(i => {
+  const inv = D.inventory || [];
+
+  // Build case pack rollup: baseNum -> extra available units from case packs
+  const cpRollup = {};
+  inv.forEach(i => {
+    if (!i.num.endsWith('-C')) return;
+    if (!isActive(i) || !isIncluded(i.num)) return;
+    const baseNum = i.num.slice(0, -2); // strip -C
+    const size = getCasePackSize(i.desc);
+    if (!cpRollup[baseNum]) cpRollup[baseNum] = { oh: 0, committed: 0, available: 0 };
+    cpRollup[baseNum].oh        += (i.oh || 0) * size;
+    cpRollup[baseNum].committed += (i.committed || 0) * size;
+    cpRollup[baseNum].available += (i.available || 0) * size;
+  });
+
+  return inv.filter(i => {
     if (!isActive(i) || !isIncluded(i.num)) return false;
     if (i.num.startsWith('BLK-')) return false;
     if (/^Bulk /i.test(i.desc)) return false;
     if (i.num.endsWith('-PI')) return false;
     if ((i.desc||'').toLowerCase().includes('perfectly imperfect')) return false;
+    if (i.num.endsWith('-C')) return false; // rolled up into base
     return true;
   }).map(i => {
+    const cp = cpRollup[i.num] || { oh: 0, committed: 0, available: 0 };
+    const oh        = (i.oh || 0)        + cp.oh;
+    const committed = (i.committed || 0) + cp.committed;
+    const available = (i.available || 0) + cp.available;
     const annFct = getAnnualFct(i.num);
     const wf = annFct > 0 ? annFct/52 : null;
-    const woh = wf && wf > 0 ? i.available/wf : null;
+    const woh = wf && wf > 0 ? available/wf : null;
     const doh = woh !== null ? Math.round(woh*7) : null;
     const moh = woh !== null ? Math.round(woh/4.33*10)/10 : null;
-    const st  = calcWohStatus(woh, i.available);
-    return { ...i, wf: wf ? Math.round(wf*10)/10 : null, woh: woh ? Math.round(woh*10)/10 : null, doh, moh, st };
+    const st  = calcWohStatus(woh, available);
+    return { ...i, oh, committed, available, wf: wf ? Math.round(wf*10)/10 : null, woh: woh ? Math.round(woh*10)/10 : null, doh, moh, st };
   });
 }
 
